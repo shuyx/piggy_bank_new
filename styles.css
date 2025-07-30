@@ -1,0 +1,949 @@
+/* 基础样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #333;
+    overflow-x: hidden;
+}
+
+.container {
+    max-width: 414px;
+    margin: 0 auto;
+    height: 100vh;
+    background: white;
+    position: relative;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+}
+
+/* 页面指示器 */
+.page-indicator {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 100;
+    background: rgba(255,255,255,0.9);
+    padding: 8px 16px;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ddd;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.dot.active {
+    background: #667eea;
+    transform: scale(1.2);
+}
+
+/* 页面容器 */
+.pages-container {
+    display: flex;
+    width: 400%;
+    height: 100vh;
+    transition: transform 0.3s ease;
+}
+
+.page {
+    width: 25%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.page-content {
+    flex: 1;
+    padding: 60px 20px 20px;
+    overflow-y: auto;
+}
+
+/* 标题样式 */
+h1 {
+    font-size: 28px;
+    text-align: center;
+    margin-bottom: 30px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+}
+
+h2 {
+    font-size: 24px;
+    text-align: center;
+    margin-bottom: 25px;
+    color: #333;
+}
+
+h3 {
+    font-size: 18px;
+    margin: 20px 0 15px;
+    color: #555;
+}
+
+/* 首页样式 */
+.total-stars {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
+    margin-bottom: 20px;
+    color: white;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.star-count {
+    font-size: 48px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.star-label {
+    font-size: 16px;
+    opacity: 0.9;
+}
+
+.today-stats {
+    background: #f8f9ff;
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 25px;
+    border: 2px solid #e1e7ff;
+}
+
+.today-count {
+    font-size: 32px;
+    font-weight: bold;
+    color: #667eea;
+    margin-top: 8px;
+}
+
+.quick-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.quick-btn {
+    background: white;
+    border: 2px solid #667eea;
+    color: #667eea;
+    padding: 15px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.quick-btn:hover {
+    background: #667eea;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.quick-btn.reward {
+    border-color: #10b981;
+    color: #10b981;
+}
+
+.quick-btn.reward:hover {
+    background: #10b981;
+    color: white;
+}
+
+.quick-btn.punish {
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.quick-btn.punish:hover {
+    background: #ef4444;
+    color: white;
+}
+
+/* 表单样式 */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #555;
+}
+
+.form-group select,
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e1e7ff;
+    border-radius: 8px;
+    font-size: 16px;
+    background: white;
+    transition: border-color 0.3s ease;
+    font-family: inherit;
+    resize: vertical;
+}
+
+.form-group select:focus,
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+/* 星星输入 */
+.star-input {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.star-input input {
+    flex: 1;
+    text-align: center;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.star-btn {
+    width: 40px;
+    height: 40px;
+    border: 2px solid #667eea;
+    background: white;
+    color: #667eea;
+    border-radius: 8px;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.star-btn:hover {
+    background: #667eea;
+    color: white;
+}
+
+.add-category-btn {
+    width: 40px;
+    height: 40px;
+    border: 2px solid #10b981;
+    background: white;
+    color: #10b981;
+    border-radius: 8px;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: all 0.3s ease;
+}
+
+.add-category-btn:hover {
+    background: #10b981;
+    color: white;
+}
+
+/* 提交按钮 */
+.submit-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    margin-bottom: 20px;
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.punish-btn {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.punish-btn:hover {
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+}
+
+/* 记录显示 */
+.recent-records, .reward-history, .punish-history {
+    margin-top: 25px;
+}
+
+.record-item, .history-item {
+    background: #f8f9ff;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-left: 4px solid #667eea;
+}
+
+.record-info, .item-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.category, .item-name {
+    font-weight: 600;
+    color: #333;
+}
+
+.stars, .item-cost {
+    font-weight: bold;
+    color: #667eea;
+}
+
+.record-note {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.record-time, .item-date {
+    color: #999;
+    font-size: 12px;
+}
+
+.history-item.punish {
+    border-left-color: #ef4444;
+}
+
+.history-item.punish .item-cost {
+    color: #ef4444;
+}
+
+.no-records {
+    text-align: center;
+    color: #999;
+    font-style: italic;
+    padding: 20px;
+}
+
+/* 记录页面样式 */
+.balance-card {
+    background: linear-gradient(135deg, #10b981, #059669);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 25px;
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+    color: white;
+}
+
+.balance-card.punishment {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+}
+
+.balance-icon {
+    font-size: 32px;
+    margin-right: 15px;
+}
+
+.balance-info {
+    flex: 1;
+}
+
+.balance-label {
+    font-size: 14px;
+    opacity: 0.9;
+    margin-bottom: 5px;
+}
+
+.balance-amount {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.warning-icon {
+    font-size: 28px;
+    opacity: 0.9;
+}
+
+/* 记录表单样式 */
+.record-form {
+    background: #f8f9ff;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 25px;
+}
+
+.category-input-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.category-input-group select {
+    flex: 1;
+}
+
+.star-counter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.counter-btn {
+    width: 45px;
+    height: 45px;
+    border: 2px solid #667eea;
+    background: white;
+    color: #667eea;
+    border-radius: 12px;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.counter-btn:hover {
+    background: #667eea;
+    color: white;
+    transform: scale(1.05);
+}
+
+.counter-btn.minus {
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.counter-btn.minus:hover {
+    background: #ef4444;
+    color: white;
+}
+
+.counter-btn.plus {
+    border-color: #10b981;
+    color: #10b981;
+}
+
+.counter-btn.plus:hover {
+    background: #10b981;
+    color: white;
+}
+
+.star-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.star-display input {
+    width: 80px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    border: 2px solid #e1e7ff;
+    border-radius: 8px;
+    padding: 8px;
+}
+
+.stars-visual {
+    font-size: 24px;
+    display: flex;
+    gap: 2px;
+}
+
+.star-presets {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.preset-btn {
+    background: white;
+    border: 2px solid #667eea;
+    color: #667eea;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.preset-btn:hover {
+    background: #667eea;
+    color: white;
+}
+
+.preset-btn.punishment {
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.preset-btn.punishment:hover {
+    background: #ef4444;
+    color: white;
+}
+
+.record-btn {
+    background: linear-gradient(135deg, #10b981, #059669);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-icon {
+    font-size: 20px;
+}
+
+.btn-text {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* 区域样式 */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.today-summary {
+    font-size: 14px;
+    color: #667eea;
+    font-weight: 600;
+}
+
+.records-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+/* 奖励页面样式 */
+.wallet-card {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 25px;
+    box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
+    color: white;
+    position: relative;
+}
+
+.wallet-icon {
+    font-size: 32px;
+    margin-right: 15px;
+}
+
+.wallet-info {
+    flex: 1;
+}
+
+.wallet-label {
+    font-size: 14px;
+    opacity: 0.9;
+    margin-bottom: 5px;
+}
+
+.wallet-amount {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.pig-emoji {
+    font-size: 40px;
+    opacity: 0.7;
+}
+
+.rewards-section, .custom-section, .history-section {
+    margin-bottom: 25px;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 15px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #333;
+}
+
+.title-icon {
+    font-size: 20px;
+}
+
+.reward-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.reward-card {
+    background: white;
+    border: 2px solid #e1e7ff;
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.reward-card:hover {
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+}
+
+.reward-emoji {
+    font-size: 32px;
+    margin-bottom: 8px;
+}
+
+.reward-name {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.reward-price {
+    font-size: 16px;
+    font-weight: bold;
+    color: #667eea;
+}
+
+.custom-form {
+    background: #f8f9ff;
+    border-radius: 16px;
+    padding: 20px;
+}
+
+.form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.flex-1 {
+    flex: 1;
+}
+
+.cost-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cost-input input {
+    flex: 1;
+}
+
+.cost-unit {
+    font-size: 18px;
+    font-weight: bold;
+    color: #667eea;
+}
+
+.custom-reward-btn {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.history-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+/* 惩罚页面样式 */
+.punishment-form {
+    background: #fef2f2;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 25px;
+    border: 2px solid #fecaca;
+}
+
+.form-notice {
+    background: #dbeafe;
+    border-radius: 12px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.notice-icon {
+    font-size: 20px;
+}
+
+.notice-text {
+    font-size: 14px;
+    color: #1e40af;
+    line-height: 1.4;
+}
+
+.punishment-counter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.punishment-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.punishment-display input {
+    width: 80px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    border: 2px solid #fecaca;
+    border-radius: 8px;
+    padding: 8px;
+}
+
+.punishment-visual {
+    font-size: 24px;
+    color: #ef4444;
+}
+
+.punishment-presets {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.punishment-warning {
+    background: #fee2e2;
+    border: 2px solid #fecaca;
+    border-radius: 12px;
+    padding: 15px;
+    margin: 20px 0;
+}
+
+.warning-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.warning-emoji {
+    font-size: 20px;
+}
+
+.warning-text {
+    font-size: 14px;
+    color: #dc2626;
+    font-weight: 600;
+}
+
+.history-list.punishment .history-item {
+    border-left-color: #ef4444;
+    background: #fef2f2;
+}
+
+/* 当前星星显示 */
+.current-stars {
+    background: #f8f9ff;
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 600;
+    color: #667eea;
+    margin-bottom: 20px;
+}
+
+.quick-rewards {
+    margin-bottom: 25px;
+}
+
+.reward-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    margin-bottom: 10px;
+}
+
+.reward-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+}
+
+.custom-reward {
+    background: #f8f9ff;
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+}
+
+/* 消息提示 */
+.message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #333;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 8px;
+    font-weight: 600;
+    z-index: 1000;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.message.show {
+    opacity: 1;
+}
+
+.message.success {
+    background: #10b981;
+}
+
+.message.error {
+    background: #ef4444;
+}
+
+.message.warning {
+    background: #f59e0b;
+}
+
+/* 响应式设计 */
+@media (max-width: 414px) {
+    .container {
+        max-width: 100%;
+    }
+    
+    .page-content {
+        padding: 60px 15px 20px;
+    }
+    
+    .star-count {
+        font-size: 42px;
+    }
+    
+    .today-count {
+        font-size: 28px;
+    }
+    
+    .form-group select,
+    .form-group input {
+        font-size: 16px; /* 防止iOS放大 */
+    }
+    
+    .quick-btn, .submit-btn, .reward-btn {
+        min-height: 44px; /* iOS触摸目标最小尺寸 */
+    }
+}
+
+/* 更宽泛的移动端适配 */
+@media (max-width: 768px) {
+    .container {
+        width: 100vw;
+        height: 100vh;
+    }
+    
+    .pages-container {
+        touch-action: pan-x; /* 只允许水平滑动 */
+    }
+    
+    .page-content {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-x: none; /* 防止过度滚动 */
+    }
+}
+
+/* 滚动条样式 */
+.page-content::-webkit-scrollbar {
+    width: 4px;
+}
+
+.page-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.page-content::-webkit-scrollbar-thumb {
+    background: #ddd;
+    border-radius: 2px;
+}
+
+.page-content::-webkit-scrollbar-thumb:hover {
+    background: #bbb;
+}
+
+/* 动画效果 */
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+.star-count {
+    animation: bounce 2s infinite;
+}
+
+/* iOS 样式调整 */
+@supports (-webkit-touch-callout: none) {
+    .page-content {
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    input, select, button {
+        -webkit-appearance: none;
+        border-radius: 8px;
+    }
+}

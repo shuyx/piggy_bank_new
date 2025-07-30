@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(open index.html)",
+      "Bash(open test.html)",
+      "Bash(rm:*)",
+      "Bash(open debug.html)",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": []
+  }
+}

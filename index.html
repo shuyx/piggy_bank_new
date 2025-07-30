@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐷🏦 猪猪银行</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 导航指示器 -->
+        <div class="page-indicator">
+            <span class="dot active" data-page="0"></span>
+            <span class="dot" data-page="1"></span>
+            <span class="dot" data-page="2"></span>
+            <span class="dot" data-page="3"></span>
+        </div>
+
+        <!-- 页面容器 -->
+        <div class="pages-container" id="pagesContainer">
+            <!-- 首页 -->
+            <div class="page" id="homePage">
+                <div class="page-content">
+                    <h1>🐷🏦 猪猪银行</h1>
+                    <div class="total-stars">
+                        <div class="star-count" id="totalStars">0</div>
+                        <div class="star-label">总星星数</div>
+                    </div>
+                    <div class="today-stats">
+                        <h3>今日获得</h3>
+                        <div class="today-count" id="todayStars">0</div>
+                    </div>
+                    <div class="quick-actions">
+                        <button class="quick-btn" onclick="goToPage(1)">记录星星</button>
+                        <button class="quick-btn reward" onclick="goToPage(2)">兑换奖励</button>
+                        <button class="quick-btn punish" onclick="goToPage(3)">惩罚记录</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 记录页面 -->
+            <div class="page" id="recordPage">
+                <div class="page-content">
+                    <h2>✨ 记录星星</h2>
+                    
+                    <!-- 当前余额显示 -->
+                    <div class="balance-card">
+                        <div class="balance-icon">🐷</div>
+                        <div class="balance-info">
+                            <div class="balance-label">猪猪余额</div>
+                            <div class="balance-amount" id="recordPageBalance">0 ⭐</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 记录表单 -->
+                    <div class="record-form">
+                        <div class="form-group">
+                            <label>🏷️ 星星类别：</label>
+                            <div class="category-input-group">
+                                <select id="categorySelect">
+                                    <option value="学习">📚 学习</option>
+                                    <option value="家务">🏠 家务</option>
+                                    <option value="礼貌">😊 礼貌</option>
+                                    <option value="自理">👕 自理</option>
+                                </select>
+                                <button class="add-category-btn" onclick="addNewCategory()" title="添加新类别">+</button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>⭐ 星星数量：</label>
+                            <div class="star-counter">
+                                <button class="counter-btn minus" onclick="changeStars(-1)">−</button>
+                                <div class="star-display">
+                                    <input type="number" id="starCount" value="1" min="1" max="10" readonly>
+                                    <div class="stars-visual" id="starsVisual">⭐</div>
+                                </div>
+                                <button class="counter-btn plus" onclick="changeStars(1)">+</button>
+                            </div>
+                            <div class="star-presets">
+                                <button class="preset-btn" onclick="setStars(1)">1⭐</button>
+                                <button class="preset-btn" onclick="setStars(3)">3⭐</button>
+                                <button class="preset-btn" onclick="setStars(5)">5⭐</button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>📝 表现描述：</label>
+                            <textarea id="noteInput" placeholder="今天做得很棒！记录一下具体表现..." rows="3"></textarea>
+                        </div>
+                        
+                        <button class="submit-btn record-btn" onclick="addStars()">
+                            <span class="btn-icon">💰</span>
+                            <span class="btn-text">存入猪猪银行</span>
+                        </button>
+                    </div>
+                    
+                    <!-- 今日记录 -->
+                    <div class="recent-records">
+                        <div class="section-header">
+                            <h3>📊 今日记录</h3>
+                            <div class="today-summary" id="todaySummary">今天共获得 0 颗星星</div>
+                        </div>
+                        <div class="records-list" id="todayRecords"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 奖励页面 -->
+            <div class="page" id="rewardPage">
+                <div class="page-content">
+                    <h2>🎁 奖励商店</h2>
+                    
+                    <!-- 余额显示 -->
+                    <div class="wallet-card">
+                        <div class="wallet-icon">💰</div>
+                        <div class="wallet-info">
+                            <div class="wallet-label">可用余额</div>
+                            <div class="wallet-amount" id="currentStars1">0 ⭐</div>
+                        </div>
+                        <div class="pig-emoji">🐷</div>
+                    </div>
+                    
+                    <!-- 快速兑换区域 -->
+                    <div class="rewards-section">
+                        <div class="section-title">
+                            <span class="title-icon">⚡</span>
+                            <span class="title-text">热门奖励</span>
+                        </div>
+                        <div class="reward-grid">
+                            <div class="reward-card" onclick="quickReward(50)">
+                                <div class="reward-emoji">🍭</div>
+                                <div class="reward-name">小零食</div>
+                                <div class="reward-price">50⭐</div>
+                            </div>
+                            <div class="reward-card" onclick="quickReward(100)">
+                                <div class="reward-emoji">🎁</div>
+                                <div class="reward-name">小礼物</div>
+                                <div class="reward-price">100⭐</div>
+                            </div>
+                            <div class="reward-card" onclick="quickReward(200)">
+                                <div class="reward-emoji">🧸</div>
+                                <div class="reward-name">心爱玩具</div>
+                                <div class="reward-price">200⭐</div>
+                            </div>
+                            <div class="reward-card" onclick="quickReward(300)">
+                                <div class="reward-emoji">📚</div>
+                                <div class="reward-name">新书籍</div>
+                                <div class="reward-price">300⭐</div>
+                            </div>
+                            <div class="reward-card" onclick="quickReward(500)">
+                                <div class="reward-emoji">🎉</div>
+                                <div class="reward-name">特殊惊喜</div>
+                                <div class="reward-price">500⭐</div>
+                            </div>
+                            <div class="reward-card" onclick="quickReward(1000)">
+                                <div class="reward-emoji">🏆</div>
+                                <div class="reward-name">超级大奖</div>
+                                <div class="reward-price">1000⭐</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 自定义奖励区域 -->
+                    <div class="custom-section">
+                        <div class="section-title">
+                            <span class="title-icon">✨</span>
+                            <span class="title-text">自定义奖励</span>
+                        </div>
+                        <div class="custom-form">
+                            <div class="form-row">
+                                <div class="form-group flex-1">
+                                    <label>🏷️ 奖励名称：</label>
+                                    <input type="text" id="rewardName" placeholder="比如：看电影、买玩具...">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group flex-1">
+                                    <label>💰 消耗星星：</label>
+                                    <div class="cost-input">
+                                        <input type="number" id="rewardCost" value="50" min="1" max="9999">
+                                        <span class="cost-unit">⭐</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="submit-btn custom-reward-btn" onclick="customReward()">
+                                <span class="btn-icon">🛒</span>
+                                <span class="btn-text">立即兑换</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 兑换记录 -->
+                    <div class="history-section">
+                        <div class="section-title">
+                            <span class="title-icon">📋</span>
+                            <span class="title-text">兑换记录</span>
+                        </div>
+                        <div class="history-list" id="rewardRecords"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 惩罚页面 -->
+            <div class="page" id="punishPage">
+                <div class="page-content">
+                    <h2>⚠️ 改正记录</h2>
+                    
+                    <!-- 当前余额显示 -->
+                    <div class="balance-card punishment">
+                        <div class="balance-icon">🐷</div>
+                        <div class="balance-info">
+                            <div class="balance-label">当前余额</div>
+                            <div class="balance-amount" id="currentStars2">0 ⭐</div>
+                        </div>
+                        <div class="warning-icon">⚠️</div>
+                    </div>
+                    
+                    <!-- 惩罚表单 -->
+                    <div class="punishment-form">
+                        <div class="form-notice">
+                            <div class="notice-icon">💡</div>
+                            <div class="notice-text">做错事情要承担后果，这样才能更好地成长！</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>📝 需要改正的行为：</label>
+                            <textarea id="punishReason" placeholder="比如：没有收拾玩具、对长辈不礼貌、不按时睡觉..." rows="3"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>⭐ 扣除星星数量：</label>
+                            <div class="punishment-counter">
+                                <button class="counter-btn minus" onclick="changePunishStars(-1)">−</button>
+                                <div class="punishment-display">
+                                    <input type="number" id="punishCount" value="5" min="1" max="50" readonly>
+                                    <div class="punishment-visual">⭐</div>
+                                </div>
+                                <button class="counter-btn plus" onclick="changePunishStars(1)">+</button>
+                            </div>
+                            <div class="punishment-presets">
+                                <button class="preset-btn punishment" onclick="setPunishStars(3)">轻微 3⭐</button>
+                                <button class="preset-btn punishment" onclick="setPunishStars(5)">一般 5⭐</button>
+                                <button class="preset-btn punishment" onclick="setPunishStars(10)">严重 10⭐</button>
+                            </div>
+                        </div>
+                        
+                        <div class="punishment-warning">
+                            <div class="warning-content">
+                                <span class="warning-emoji">🚨</span>
+                                <span class="warning-text">确认后将从猪猪银行扣除星星</span>
+                            </div>
+                        </div>
+                        
+                        <button class="submit-btn punish-btn" onclick="addPunishment()">
+                            <span class="btn-icon">💸</span>
+                            <span class="btn-text">确认扣除</span>
+                        </button>
+                    </div>
+                    
+                    <!-- 改正记录 -->
+                    <div class="history-section">
+                        <div class="section-title">
+                            <span class="title-icon">📋</span>
+                            <span class="title-text">改正记录</span>
+                        </div>
+                        <div class="history-list punishment" id="punishRecords"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
