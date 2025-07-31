@@ -8,7 +8,7 @@ class StarStorage {
         if (!localStorage.getItem('starData')) {
             localStorage.setItem('starData', JSON.stringify({
                 totalStars: 0,
-                categories: ['学习', '家务', '礼貌', '自理'],
+                categories: ['学习', '家务', '礼貌', '自理', '运动'],
                 records: [],
                 rewards: [],
                 punishments: [],
@@ -602,6 +602,117 @@ class StarApp {
         }
     }
 
+    // 切换记录查看模式
+    switchRecordView(viewType) {
+        const todayTab = document.getElementById('todayTab');
+        const historyTab = document.getElementById('historyTab');
+        const todayView = document.getElementById('todayView');
+        const historyView = document.getElementById('historyView');
+
+        if (viewType === 'today') {
+            todayTab.classList.add('active');
+            historyTab.classList.remove('active');
+            todayView.classList.remove('hidden');
+            historyView.classList.add('hidden');
+        } else {
+            historyTab.classList.add('active');
+            todayTab.classList.remove('active');
+            historyView.classList.remove('hidden');
+            todayView.classList.add('hidden');
+            this.loadHistoryRecords();
+        }
+    }
+
+    // 加载历史记录
+    loadHistoryRecords() {
+        const data = this.storage.getData();
+        
+        // 设置日期筛选器默认值为今天
+        const dateFilter = document.getElementById('dateFilter');
+        if (!dateFilter.value) {
+            dateFilter.value = new Date().toISOString().split('T')[0];
+        }
+        
+        this.filterHistoryRecords();
+    }
+
+    // 筛选历史记录
+    filterHistoryRecords() {
+        const data = this.storage.getData();
+        const dateFilter = document.getElementById('dateFilter').value;
+        const categoryFilter = document.getElementById('categoryFilter').value;
+        
+        let filteredRecords = data.records;
+        
+        // 按日期筛选
+        if (dateFilter) {
+            const filterDate = new Date(dateFilter).toDateString();
+            filteredRecords = filteredRecords.filter(record => 
+                new Date(record.date).toDateString() === filterDate
+            );
+        }
+        
+        // 按类别筛选
+        if (categoryFilter) {
+            filteredRecords = filteredRecords.filter(record => 
+                record.category === categoryFilter
+            );
+        }
+        
+        // 按时间倒序排列
+        filteredRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        this.displayHistoryRecords(filteredRecords, dateFilter, categoryFilter);
+    }
+
+    // 显示历史记录
+    displayHistoryRecords(records, dateFilter, categoryFilter) {
+        const container = document.getElementById('historyRecords');
+        const summaryEl = document.getElementById('historySummary');
+        
+        // 计算统计信息
+        const totalStars = records.reduce((sum, record) => sum + record.stars, 0);
+        const recordCount = records.length;
+        
+        // 更新摘要
+        let summaryText = '';
+        if (dateFilter) {
+            const date = new Date(dateFilter);
+            summaryText = `${date.getMonth() + 1}月${date.getDate()}日`;
+        } else {
+            summaryText = '全部时间';
+        }
+        
+        if (categoryFilter) {
+            summaryText += ` - ${categoryFilter}类别`;
+        }
+        
+        summaryText += `：共 ${recordCount} 条记录，获得 ${totalStars} 颗星星`;
+        summaryEl.textContent = summaryText;
+        
+        // 显示记录列表
+        if (records.length === 0) {
+            container.innerHTML = '<p class="no-records">没有找到匹配的记录</p>';
+            return;
+        }
+        
+        container.innerHTML = records.map(record => {
+            const date = new Date(record.date);
+            return `
+                <div class="record-item">
+                    <div class="record-info">
+                        <span class="category">${record.category}</span>
+                        <span class="stars">${record.stars}⭐</span>
+                    </div>
+                    <div class="record-note">${record.note || ''}</div>
+                    <div class="record-time">
+                        ${date.getMonth() + 1}月${date.getDate()}日 ${date.toLocaleTimeString()}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
     // 显示消息
     showMessage(message, type = 'info') {
         // 创建消息元素
@@ -670,6 +781,14 @@ function changeManageStars(delta) {
 
 function updateTotalStars() {
     app.updateTotalStars();
+}
+
+function switchRecordView(viewType) {
+    app.switchRecordView(viewType);
+}
+
+function filterHistoryRecords() {
+    app.filterHistoryRecords();
 }
 
 // 初始化应用

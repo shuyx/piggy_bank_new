@@ -64,6 +64,7 @@
                                     <option value="家务">🏠 家务</option>
                                     <option value="礼貌">😊 礼貌</option>
                                     <option value="自理">👕 自理</option>
+                                    <option value="运动">🏃 运动</option>
                                 </select>
                                 <button class="add-category-btn" onclick="addNewCategory()" title="添加新类别">+</button>
                             </div>
@@ -97,13 +98,43 @@
                         </button>
                     </div>
                     
-                    <!-- 今日记录 -->
-                    <div class="recent-records">
-                        <div class="section-header">
-                            <h3>📊 今日记录</h3>
-                            <div class="today-summary" id="todaySummary">今天共获得 0 颗星星</div>
+                    <!-- 记录查看区域 -->
+                    <div class="records-view-section">
+                        <div class="view-tabs">
+                            <button class="tab-btn active" id="todayTab" onclick="switchRecordView('today')">今日记录</button>
+                            <button class="tab-btn" id="historyTab" onclick="switchRecordView('history')">历史记录</button>
                         </div>
-                        <div class="records-list" id="todayRecords"></div>
+                        
+                        <!-- 今日记录 -->
+                        <div class="record-view-content" id="todayView">
+                            <div class="section-header">
+                                <div class="today-summary" id="todaySummary">今天共获得 0 颗星星</div>
+                            </div>
+                            <div class="records-list" id="todayRecords"></div>
+                        </div>
+                        
+                        <!-- 历史记录 -->
+                        <div class="record-view-content hidden" id="historyView">
+                            <div class="history-filter">
+                                <div class="filter-group">
+                                    <label>📅 选择日期：</label>
+                                    <input type="date" id="dateFilter" onchange="filterHistoryRecords()">
+                                </div>
+                                <div class="filter-group">
+                                    <label>🏷️ 筛选类别：</label>
+                                    <select id="categoryFilter" onchange="filterHistoryRecords()">
+                                        <option value="">全部类别</option>
+                                        <option value="学习">📚 学习</option>
+                                        <option value="家务">🏠 家务</option>
+                                        <option value="礼貌">😊 礼貌</option>
+                                        <option value="自理">👕 自理</option>
+                                        <option value="运动">🏃 运动</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="history-summary" id="historySummary"></div>
+                            <div class="records-list" id="historyRecords"></div>
+                        </div>
                     </div>
                 </div>
             </div>
