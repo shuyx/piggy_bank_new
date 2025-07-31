@@ -54,13 +54,13 @@ body {
 /* 页面容器 */
 .pages-container {
     display: flex;
-    width: 400%;
+    width: 500%;
     height: 100vh;
     transition: transform 0.3s ease;
 }
 
 .page {
-    width: 25%;
+    width: 20%;
     height: 100vh;
     display: flex;
     flex-direction: column;
@@ -79,9 +79,7 @@ h1 {
     font-size: 28px;
     text-align: center;
     margin-bottom: 30px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #333;
     font-weight: 700;
 }
 
@@ -178,6 +176,16 @@ h3 {
 
 .quick-btn.punish:hover {
     background: #ef4444;
+    color: white;
+}
+
+.quick-btn.manage {
+    border-color: #8b5cf6;
+    color: #8b5cf6;
+}
+
+.quick-btn.manage:hover {
+    background: #8b5cf6;
     color: white;
 }
 
@@ -413,8 +421,12 @@ h3 {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 15px;
+    gap: 12px;
     margin-bottom: 15px;
+    padding: 15px;
+    background: white;
+    border-radius: 12px;
+    border: 2px solid #e1e7ff;
 }
 
 .counter-btn {
@@ -428,6 +440,7 @@ h3 {
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
+    flex-shrink: 0;
 }
 
 .counter-btn:hover {
@@ -461,6 +474,7 @@ h3 {
     flex-direction: column;
     align-items: center;
     gap: 8px;
+    min-width: 100px;
 }
 
 .star-display input {
@@ -471,12 +485,20 @@ h3 {
     border: 2px solid #e1e7ff;
     border-radius: 8px;
     padding: 8px;
+    background: #f8f9ff;
+}
+
+.star-display input:focus {
+    border-color: #667eea;
+    background: white;
 }
 
 .stars-visual {
-    font-size: 24px;
+    font-size: 20px;
     display: flex;
     gap: 2px;
+    justify-content: center;
+    min-height: 24px;
 }
 
 .star-presets {
@@ -934,6 +956,142 @@ h3 {
 
 .star-count {
     animation: bounce 2s infinite;
+}
+
+/* 管理页面样式 */
+.status-card {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 25px;
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+    color: white;
+}
+
+.status-icon {
+    font-size: 32px;
+    margin-right: 15px;
+}
+
+.status-info {
+    flex: 1;
+}
+
+.status-label {
+    font-size: 14px;
+    opacity: 0.9;
+    margin-bottom: 5px;
+}
+
+.status-amount {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.pig-icon {
+    font-size: 40px;
+    opacity: 0.7;
+}
+
+.manage-section, .stats-section {
+    margin-bottom: 25px;
+}
+
+.manage-form {
+    background: #faf5ff;
+    border-radius: 16px;
+    padding: 20px;
+    border: 2px solid #e9d5ff;
+}
+
+.form-notice.manage {
+    background: #fef3c7;
+    border-radius: 12px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    border: 2px solid #fde68a;
+}
+
+.form-notice.manage .notice-text {
+    font-size: 14px;
+    color: #92400e;
+    line-height: 1.4;
+}
+
+.star-input-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+}
+
+.star-input-group input {
+    flex: 1;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    max-width: 120px;
+}
+
+.star-input-group .counter-btn {
+    width: 50px;
+    height: 40px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.manage-warning {
+    background: #fef2f2;
+    border: 2px solid #fecaca;
+    border-radius: 12px;
+    padding: 15px;
+    margin: 20px 0;
+}
+
+.manage-btn {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.stat-card {
+    background: white;
+    border: 2px solid #e9d5ff;
+    border-radius: 12px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.stat-icon {
+    font-size: 24px;
+}
+
+.stat-info {
+    flex: 1;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 2px;
+}
+
+.stat-value {
+    font-size: 18px;
+    font-weight: bold;
+    color: #8b5cf6;
 }
 
 /* iOS 样式调整 */

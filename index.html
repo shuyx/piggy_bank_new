@@ -14,6 +14,7 @@
             <span class="dot" data-page="1"></span>
             <span class="dot" data-page="2"></span>
             <span class="dot" data-page="3"></span>
+            <span class="dot" data-page="4"></span>
         </div>
 
         <!-- 页面容器 -->
@@ -34,6 +35,7 @@
                         <button class="quick-btn" onclick="goToPage(1)">记录星星</button>
                         <button class="quick-btn reward" onclick="goToPage(2)">兑换奖励</button>
                         <button class="quick-btn punish" onclick="goToPage(3)">惩罚记录</button>
+                        <button class="quick-btn manage" onclick="goToPage(4)">管理设置</button>
                     </div>
                 </div>
             </div>
@@ -139,8 +141,8 @@
                                 <div class="reward-price">100⭐</div>
                             </div>
                             <div class="reward-card" onclick="quickReward(200)">
-                                <div class="reward-emoji">🧸</div>
-                                <div class="reward-name">心爱玩具</div>
+                                <div class="reward-emoji">🎬</div>
+                                <div class="reward-name">看电影</div>
                                 <div class="reward-price">200⭐</div>
                             </div>
                             <div class="reward-card" onclick="quickReward(300)">
@@ -265,6 +267,112 @@
                             <span class="title-text">改正记录</span>
                         </div>
                         <div class="history-list punishment" id="punishRecords"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 管理页面 -->
+            <div class="page" id="managePage">
+                <div class="page-content">
+                    <h2>⚙️ 管理设置</h2>
+                    
+                    <!-- 当前状态显示 -->
+                    <div class="status-card">
+                        <div class="status-icon">🏦</div>
+                        <div class="status-info">
+                            <div class="status-label">当前银行总额</div>
+                            <div class="status-amount" id="managePageBalance">0 ⭐</div>
+                        </div>
+                        <div class="pig-icon">🐷</div>
+                    </div>
+                    
+                    <!-- 设置总星星数 -->
+                    <div class="manage-section">
+                        <div class="section-title">
+                            <span class="title-icon">💰</span>
+                            <span class="title-text">设置总星星数</span>
+                        </div>
+                        <div class="manage-form">
+                            <div class="form-notice manage">
+                                <div class="notice-icon">⚠️</div>
+                                <div class="notice-text">请谨慎修改总星星数，这会影响所有统计数据！</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>🎯 新的总星星数：</label>
+                                <div class="star-input-group">
+                                    <button class="counter-btn minus" onclick="changeManageStars(-10)">-10</button>
+                                    <button class="counter-btn minus" onclick="changeManageStars(-1)">-1</button>
+                                    <input type="number" id="newTotalStars" value="0" min="0" max="99999" placeholder="输入星星数量">
+                                    <button class="counter-btn plus" onclick="changeManageStars(1)">+1</button>
+                                    <button class="counter-btn plus" onclick="changeManageStars(10)">+10</button>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>📝 修改原因：</label>
+                                <textarea id="changeReason" placeholder="请说明修改原因，比如：初始设置、奖励调整、数据纠正等..." rows="3"></textarea>
+                            </div>
+                            
+                            <div class="manage-warning">
+                                <div class="warning-content">
+                                    <span class="warning-emoji">🚨</span>
+                                    <span class="warning-text">确认后将立即生效，无法撤销</span>
+                                </div>
+                            </div>
+                            
+                            <button class="submit-btn manage-btn" onclick="updateTotalStars()">
+                                <span class="btn-icon">💎</span>
+                                <span class="btn-text">确认修改</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 数据统计 -->
+                    <div class="stats-section">
+                        <div class="section-title">
+                            <span class="title-icon">📊</span>
+                            <span class="title-text">数据统计</span>
+                        </div>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-icon">📅</div>
+                                <div class="stat-info">
+                                    <div class="stat-label">使用天数</div>
+                                    <div class="stat-value" id="usageDays">0</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">📝</div>
+                                <div class="stat-info">
+                                    <div class="stat-label">记录次数</div>
+                                    <div class="stat-value" id="recordCount">0</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">🎁</div>
+                                <div class="stat-info">
+                                    <div class="stat-label">兑换次数</div>
+                                    <div class="stat-value" id="rewardCount">0</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">⚠️</div>
+                                <div class="stat-info">
+                                    <div class="stat-label">惩罚次数</div>
+                                    <div class="stat-value" id="punishCount">0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 管理记录 -->
+                    <div class="history-section">
+                        <div class="section-title">
+                            <span class="title-icon">📋</span>
+                            <span class="title-text">管理记录</span>
+                        </div>
+                        <div class="history-list" id="manageRecords"></div>
                     </div>
                 </div>
             </div>

@@ -11,7 +11,9 @@ class StarStorage {
                 categories: ['学习', '家务', '礼貌', '自理'],
                 records: [],
                 rewards: [],
-                punishments: []
+                punishments: [],
+                manageRecords: [],
+                firstUseDate: new Date().toISOString()
             }));
         }
     }
@@ -43,7 +45,7 @@ class StarStorage {
 class PageManager {
     constructor() {
         this.currentPage = 0;
-        this.totalPages = 4;
+        this.totalPages = 5;
         this.container = document.getElementById('pagesContainer');
         this.pages = document.querySelectorAll('.page');
         this.dots = document.querySelectorAll('.dot');
@@ -59,7 +61,7 @@ class PageManager {
         this.dots[this.currentPage].classList.add('active');
         
         // 平滑滚动到目标页面
-        this.container.style.transform = `translateX(-${pageIndex * 25}%)`;
+        this.container.style.transform = `translateX(-${pageIndex * 20}%)`;
         
         // 更新页面数据
         this.updatePageData();
@@ -144,6 +146,9 @@ class PageManager {
             case 3: // 惩罚页面
                 app.updatePunishPage();
                 break;
+            case 4: // 管理页面
+                app.updateManagePage();
+                break;
         }
     }
 }
@@ -173,11 +178,11 @@ class StarApp {
     // 更新所有页面的余额显示
     updateAllBalances() {
         const data = this.storage.getData();
-        const elements = ['totalStars', 'currentStars1', 'currentStars2', 'recordPageBalance'];
+        const elements = ['totalStars', 'currentStars1', 'currentStars2', 'recordPageBalance', 'managePageBalance'];
         elements.forEach(id => {
             const element = document.getElementById(id);
             if (element) {
-                if (id === 'recordPageBalance') {
+                if (id === 'recordPageBalance' || id === 'managePageBalance') {
                     element.textContent = `${data.totalStars} ⭐`;
                 } else if (id === 'totalStars') {
                     element.textContent = data.totalStars;
@@ -359,7 +364,7 @@ class StarApp {
         const rewardNames = {
             50: '小零食',
             100: '小礼物',
-            200: '心爱玩具',
+            200: '看电影',
             300: '新书籍',
             500: '特殊惊喜',
             1000: '超级大奖'
@@ -480,6 +485,123 @@ class StarApp {
         }
     }
 
+    // 更新管理页面
+    updateManagePage() {
+        const data = this.storage.getData();
+        
+        // 更新当前余额显示
+        document.getElementById('managePageBalance').textContent = `${data.totalStars} ⭐`;
+        
+        // 设置输入框当前值
+        const input = document.getElementById('newTotalStars');
+        if (input && input.value === '0') {
+            input.value = data.totalStars;
+        }
+        
+        // 更新统计数据
+        this.updateStatsData();
+        
+        // 更新管理记录
+        this.updateManageRecords();
+    }
+
+    // 更新统计数据
+    updateStatsData() {
+        const data = this.storage.getData();
+        
+        // 计算使用天数
+        const firstUseDate = new Date(data.firstUseDate || new Date());
+        const today = new Date();
+        const usageDays = Math.ceil((today - firstUseDate) / (1000 * 60 * 60 * 24));
+        
+        // 更新统计显示
+        document.getElementById('usageDays').textContent = usageDays;
+        document.getElementById('recordCount').textContent = data.records.length;
+        document.getElementById('rewardCount').textContent = data.rewards.length;
+        document.getElementById('punishCount').textContent = data.punishments.length;
+    }
+
+    // 更新管理记录
+    updateManageRecords() {
+        const data = this.storage.getData();
+        const container = document.getElementById('manageRecords');
+        const recentManageRecords = (data.manageRecords || []).slice(-5).reverse();
+        
+        if (recentManageRecords.length === 0) {
+            container.innerHTML = '<p class="no-records">暂无管理记录</p>';
+            return;
+        }
+        
+        container.innerHTML = recentManageRecords.map(record => `
+            <div class="history-item">
+                <div class="item-info">
+                    <span class="item-name">星星数量: ${record.oldValue} → ${record.newValue}</span>
+                    <span class="item-cost">${record.newValue > record.oldValue ? '+' : ''}${record.newValue - record.oldValue}⭐</span>
+                </div>
+                <div class="record-note">${record.reason}</div>
+                <div class="item-date">${new Date(record.date).toLocaleDateString()} ${new Date(record.date).toLocaleTimeString()}</div>
+            </div>
+        `).join('');
+    }
+
+    // 改变管理页面星星数量
+    changeManageStars(delta) {
+        const input = document.getElementById('newTotalStars');
+        let value = parseInt(input.value) + delta;
+        value = Math.max(0, Math.min(99999, value));
+        input.value = value;
+    }
+
+    // 更新总星星数
+    updateTotalStars() {
+        const newTotal = parseInt(document.getElementById('newTotalStars').value);
+        const reason = document.getElementById('changeReason').value.trim();
+        
+        if (!reason) {
+            this.showMessage('请输入修改原因！', 'error');
+            return;
+        }
+        
+        const data = this.storage.getData();
+        const oldTotal = data.totalStars;
+        
+        if (newTotal === oldTotal) {
+            this.showMessage('星星数量没有变化！', 'warning');
+            return;
+        }
+        
+        if (confirm(`确定要将总星星数从 ${oldTotal} 修改为 ${newTotal} 吗？\n原因：${reason}`)) {
+            // 记录管理操作
+            if (!data.manageRecords) {
+                data.manageRecords = [];
+            }
+            data.manageRecords.push({
+                id: Date.now(),
+                oldValue: oldTotal,
+                newValue: newTotal,
+                reason: reason,
+                date: new Date().toISOString()
+            });
+            
+            // 更新总星星数
+            data.totalStars = newTotal;
+            
+            this.storage.saveData(data);
+            
+            // 重置表单
+            document.getElementById('changeReason').value = '';
+            
+            // 更新所有页面
+            this.updateAllBalances();
+            this.updateHomePage();
+            this.updateManagePage();
+            
+            const change = newTotal - oldTotal;
+            const changeText = change > 0 ? `增加了 ${change}` : `减少了 ${Math.abs(change)}`;
+            this.showMessage(`总星星数已更新！${changeText} 颗星星`, 'success');
+        }
+    }
+
     // 显示消息
     showMessage(message, type = 'info') {
         // 创建消息元素
@@ -540,6 +662,14 @@ function changePunishStars(delta) {
 
 function setPunishStars(count) {
     app.setPunishStars(count);
+}
+
+function changeManageStars(delta) {
+    app.changeManageStars(delta);
+}
+
+function updateTotalStars() {
+    app.updateTotalStars();
 }
 
 // 初始化应用
