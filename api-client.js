@@ -236,6 +236,19 @@ class ApiClient {
         this.cache.clear();
     }
 
+    // 更新用户总星星数
+    async updateUserTotalStars(newTotal, reason) {
+        const result = await this.request(`/users/stats/${this.userId}`, 'PUT', {
+            totalStars: newTotal,
+            reason: reason
+        });
+
+        // 清除相关缓存
+        this.clearCache();
+
+        return result;
+    }
+
     // 设置API基础URL（用于生产环境）
     setBaseURL(url) {
         this.baseURL = url;
