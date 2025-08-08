@@ -40,6 +40,65 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// 数据库初始化
+app.post('/init-db', async (req, res) => {
+  try {
+    const { PrismaClient } = require('@prisma/client');
+    const prisma = new PrismaClient();
+
+    // 测试数据库连接
+    await prisma.$connect();
+
+    // 创建默认用户（如果不存在）
+    const user = await prisma.user.upsert({
+      where: { id: 1 },
+      update: {},
+      create: {
+        id: 1,
+        username: 'user_1',
+        totalStars: 0,
+        firstUseDate: new Date(),
+      }
+    });
+
+    // 创建默认类别
+    const categories = ['学习', '家务', '礼貌', '自理', '运动'];
+    const categoryEmojis = { '学习': '📚', '家务': '🏠', '礼貌': '😊', '自理': '👕', '运动': '🏃' };
+
+    for (const categoryName of categories) {
+      await prisma.category.upsert({
+        where: {
+          userId_name: {
+            userId: 1,
+            name: categoryName,
+          }
+        },
+        update: {},
+        create: {
+          userId: 1,
+          name: categoryName,
+          emoji: categoryEmojis[categoryName] || '⭐',
+        }
+      });
+    }
+
+    await prisma.$disconnect();
+
+    res.json({
+      message: '数据库初始化成功',
+      user: user,
+      categories: categories
+    });
+
+  } catch (error) {
+    console.error('数据库初始化失败:', error);
+    res.status(500).json({
+      error: '数据库初始化失败',
+      details: error.message
+    });
+  }
+});
+
 // 404 处理
 app.use('*', (req, res) => {
   res.status(404).json({ error: '接口不存在' });
