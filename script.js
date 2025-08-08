@@ -228,7 +228,7 @@ class StarApp {
     changeStars(delta) {
         const input = document.getElementById('starCount');
         let value = parseInt(input.value) + delta;
-        value = Math.max(1, Math.min(10, value));
+        value = Math.max(1, value);
         input.value = value;
         this.updateStarsVisual(value);
     }
@@ -236,7 +236,7 @@ class StarApp {
     // 设置星星数量
     setStars(count) {
         const input = document.getElementById('starCount');
-        input.value = Math.max(1, Math.min(10, count));
+        input.value = Math.max(1, count);
         this.updateStarsVisual(count);
     }
 

@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int      @id @default(autoincrement())
+  username      String   @unique
+  email         String?  @unique
+  totalStars    Int      @default(0) @map("total_stars")
+  firstUseDate  DateTime @default(now()) @map("first_use_date")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // 关联关系
+  categories    Category[]
+  starRecords   StarRecord[]
+  rewards       Reward[]
+  punishments   Punishment[]
+  manageRecords ManageRecord[]
+
+  @@map("users")
+}
+
+model Category {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  name      String
+  emoji     String   @default("⭐")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // 关联关系
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  starRecords StarRecord[]
+
+  @@unique([userId, name], name: "userId_name")
+  @@map("categories")
+}
+
+model StarRecord {
+  id           Int      @id @default(autoincrement())
+  userId       Int      @map("user_id")
+  categoryId   Int?     @map("category_id")
+  categoryName String   @map("category_name")
+  stars        Int
+  note         String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // 关联关系
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@map("star_records")
+}
+
+model Reward {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  name      String
+  cost      Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // 关联关系
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("rewards")
+}
+
+model Punishment {
+  id             Int      @id @default(autoincrement())
+  userId         Int      @map("user_id")
+  reason         String
+  starsDeducted  Int      @map("stars_deducted")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  // 关联关系
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("punishments")
+}
+
+model ManageRecord {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  oldValue  Int      @map("old_value")
+  newValue  Int      @map("new_value")
+  reason    String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // 关联关系
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("manage_records")
+}

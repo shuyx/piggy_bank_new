@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>猪猪银行 - 卡通版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.0.0/dist/flowbite.min.js"></script>
+    <link rel="stylesheet" href="design_iterations/theme_2.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="https://unpkg.com/swiper@11/swiper-bundle.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/swiper@11/swiper-bundle.min.css">
+</head>
+<body class="bg-background text-foreground font-sans h-full">
+    <!-- 页面容器 -->
+    <div class="flex flex-col h-screen p-4">
+        <!-- 顶部标题 -->
+        <div class="text-center py-6">
+            <h1 class="text-4xl font-bold text-primary-foreground py-2 px-4 inline-block shadow-lg bg-gradient-to-r from-primary to-indigo-600 rounded-full">
+                猪猪银行
+            </h1>
+        </div>
+
+        <!-- 主体内容 -->
+        <div class="flex-grow flex flex-col items-center justify-center space-y-8">
+            <!-- 卡通存钱罐 -->
+            <div class="w-48 h-48 relative">
+                <svg viewBox="0 0 200 200" class="w-full h-full">
+                    <circle cx="100" cy="100" r="80" fill="var(--secondary)" stroke="var(--border)" stroke-width="4"/>
+                    <circle cx="60" cy="70" r="10" fill="var(--background)"/>
+                    <circle cx="140" cy="70" r="10" fill="var(--background)"/>
+                    <path d="M60 130 Q100 180 140 130" stroke="var(--background)" stroke-width="8" fill="none"/>
+                    <circle cx="100" cy="100" r="10" fill="var(--accent)"/>
+                </svg>
+            </div>
+
+            <!-- 星星统计 -->
+            <div class="text-center">
+                <div class="text-6xl font-bold text-primary mb-2 transform transition-transform duration-500 hover:scale-110">
+                    ★★★★★★★★★★★
+                </div>
+                <div class="text-xl text-muted-foreground">
+                    125 总星星
+                </div>
+            </div>
+
+            <!-- 今日星星 -->
+            <div class="bg-muted rounded-full px-6 py-3 flex items-center space-x-2 shadow-md">
+                <div class="text-2xl text-accent">
+                    <i data-lucide="star" class="animate-pulse"></i>
+                </div>
+                <div class="text-lg font-medium">
+                    今日获得：3颗
+                </div>
+            </div>
+        </div>
+
+        <!-- 功能按钮 -->
+        <div class="grid grid-cols-3 gap-3 p-4">
+            <!-- 记录星星 -->
+            <button class="bg-gradient-to-br from-primary to-indigo-600 text-white font-bold py-3 px-2 rounded-xl shadow-lg cartoon-glow flex flex-col items-center transform transition-all duration-200 hover:scale-105 active:scale-95">
+                <div class="text-2xl mb-1">
+                    <i data-lucide="edit-3"></i>
+                </div>
+                <span class="text-sm">记录星星</span>
+            </button>
+
+            <!-- 兑换奖励 -->
+            <button class="bg-gradient-to-br from-secondary to-yellow-400 text-primary font-bold py-3 px-2 rounded-xl shadow-lg cartoon-glow flex flex-col items-center transform transition-all duration-200 hover:scale-105 active:scale-95">
+                <div class="text-2xl mb-1">
+                    <i data-lucide="gift"></i>
+                </div>
+                <span class="text-sm">兑换奖励</span>
+            </button>
+
+            <!-- 惩罚机理 -->
+            <button class="bg-gradient-to-br from-destructive to-red-400 text-white font-bold py-3 px-2 rounded-xl shadow-lg cartoon-glow flex flex-col items-center transform transition-all duration-200 hover:scale-105 active:scale-95">
+                <div class="text-2xl mb-1">
+                    <i data-lucide="alert-triangle"></i>
+                </div>
+                <span class="text-sm">惩罚机理</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 滑动页面容器 -->
+    <div class="fixed inset-0 bg-background z-50 hidden" id="swiper-container">
+        <div class="swiper w-full h-full">
+            <div class="swiper-wrapper">
+                <!-- 主页 -->
+                <div class="swiper-slide flex flex-col h-full">
+                    <!-- 主页内容 -->
+                    <div class="flex-grow flex items-center justify-center">
+                        <div class="text-center">
+                            <h2 class="text-3xl font-bold mb-4">主页内容</h2>
+                            <p class="text-muted-foreground">这是主屏幕</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 记录星星页面 -->
+                <div class="swiper-slide flex flex-col h-full">
+                    <div class="flex-grow flex items-center justify-center">
+                        <div class="text-center">
+                            <h2 class="text-3xl font-bold mb-4">记录星星</h2>
+                            <p class="text-muted-foreground">记录星星的页面</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 兑换奖励页面 -->
+                <div class="swiper-slide flex flex-col h-full">
+                    <div class="flex-grow flex items-center justify-center">
+                        <div class="text-center">
+                            <h2 class="text-3xl font-bold mb-4">兑换奖励</h2>
+                            <p class="text-muted-foreground">奖励兑换页面</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 惩罚机理页面 -->
+                <div class="swiper-slide flex flex-col h-full">
+                    <div class="flex-grow flex items-center justify-center">
+                        <div class="text-center">
+                            <h2 class="text-3xl font-bold mb-4">惩罚机理</h2>
+                            <p class="text-muted-foreground">惩罚规则页面</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化图标
+        lucide.createIcons();
+
+        // 按钮点击事件
+        document.querySelectorAll('button').forEach((btn, index) => {
+            btn.addEventListener('click', () => {
+                // 显示滑动容器并跳转到对应页面
+                document.getElementById('swiper-container').classList.remove('hidden');
+                mySwiper.slideTo(index + 1);
+            });
+        });
+
+        // 初始化滑动功能
+        const mySwiper = new Swiper('.swiper', {
+            effect: 'slide',
+            direction: 'horizontal',
+            loop: false,
+            speed: 400,
+            pagination: {
+                el: '.swiper-pagination',
+            },
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+            on: {
+                slideChange: function () {
+                    // 当滑动到第一页时隐藏滑动容器
+                    if (mySwiper.realIndex === 0) {
+                        document.getElementById('swiper-container').classList.add('hidden');
+                    }
+                }
+            }
+        });
+
+        // 添加触摸事件监听
+        let startX = 0;
+        let endX = 0;
+        
+        document.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+        });
+        
+        document.addEventListener('touchend', (e) => {
+            endX = e.changedTouches[0].clientX;
+            const deltaX = endX - startX;
+            
+            // 如果滑动距离超过30像素则触发导航
+            if (Math.abs(deltaX) > 30) {
+                if (deltaX > 0) {
+                    // 向右滑动 - 返回上一页
+                    if (mySwiper.realIndex > 0) {
+                        mySwiper.slidePrev();
+                    }
+                } else {
+                    // 向左滑动 - 下一页
+                    if (mySwiper.realIndex < 3) {
+                        mySwiper.slideNext();
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
