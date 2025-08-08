@@ -49,7 +49,7 @@ class PageManager {
         this.container = document.getElementById('pagesContainer');
         this.pages = document.querySelectorAll('.page');
         this.dots = document.querySelectorAll('.dot');
-        this.initSwipeEvents();
+        this.initNavigation();
     }
 
     goToPage(pageIndex) {
@@ -67,60 +67,13 @@ class PageManager {
         this.updatePageData();
     }
 
-    initSwipeEvents() {
-        let startX = 0;
-        let startY = 0;
-        let endX = 0;
-        let endY = 0;
-        let isScrolling = false;
-        let startTime = 0;
-
-        this.container.addEventListener('touchstart', (e) => {
-            startX = e.touches[0].clientX;
-            startY = e.touches[0].clientY;
-            startTime = Date.now();
-            isScrolling = false;
-        }, { passive: true });
-
-        this.container.addEventListener('touchmove', (e) => {
-            if (!isScrolling) {
-                endX = e.touches[0].clientX;
-                endY = e.touches[0].clientY;
-                
-                // 检查是否是垂直滚动
-                const deltaX = Math.abs(endX - startX);
-                const deltaY = Math.abs(endY - startY);
-                
-                if (deltaY > deltaX && deltaY > 20) {
-                    isScrolling = true; // 标记为垂直滚动，不触发页面切换
-                }
-            }
-        }, { passive: true });
-
-        this.container.addEventListener('touchend', () => {
-            const deltaX = endX - startX;
-            const deltaY = Math.abs(endY - startY);
-            const deltaTime = Date.now() - startTime;
-            
-            // 只有在非垂直滚动且水平滑动距离足够的情况下才切换页面
-            if (!isScrolling && Math.abs(deltaX) > 50 && deltaY < 100) {
-                if (deltaX < -50) { // 左滑，下一页
-                    this.goToPage(this.currentPage + 1);
-                } else if (deltaX > 50) { // 右滑，上一页
-                    this.goToPage(this.currentPage - 1);
-                }
-            }
-            
-            // 重置状态
-            isScrolling = false;
-        }, { passive: true });
-
-        // 点击导航点切换页面
+    initNavigation() {
+        // 只保留点击导航点切换页面的功能，移除手势滑动
         this.dots.forEach((dot, index) => {
             dot.addEventListener('click', () => this.goToPage(index));
         });
 
-        // 添加键盘支持
+        // 保留键盘支持（用于桌面测试）
         document.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowLeft') {
                 e.preventDefault();
