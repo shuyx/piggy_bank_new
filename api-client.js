@@ -1,7 +1,7 @@
 // API客户端类 - 替代localStorage
 class ApiClient {
     constructor() {
-        this.baseURL = 'http://localhost:3001/api'; // 开发环境API地址
+        this.baseURL = 'https://piggybanknew-production.up.railway.app/api'; // 生产环境API地址
         this.userId = 1; // 默认用户ID
         this.cache = new Map(); // 简单缓存
         this.init();
