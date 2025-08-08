@@ -158,14 +158,29 @@ class StarApp {
     constructor() {
         this.storage = new StarStorage();
         this.pageManager = new PageManager();
+        this.apiClient = new ApiClient();
         this.init();
     }
 
     async init() {
+        await this.loadUserData();
         this.updateHomePage();
         await this.loadCategories();
         this.updateAllBalances();
         this.updateStarsVisual(1); // 初始化星星显示
+    }
+
+    // 加载用户数据
+    async loadUserData() {
+        try {
+            const userStats = await this.apiClient.getUserStats();
+            // 更新本地存储中的用户数据
+            const data = this.storage.getData();
+            data.totalStars = userStats.user.totalStars;
+            this.storage.saveData(data);
+        } catch (error) {
+            console.error('加载用户数据失败:', error);
+        }
     }
 
     // 更新首页
