@@ -164,9 +164,9 @@ class StarApp {
 
     async init() {
         await this.loadUserData();
-        this.updateHomePage();
+        await this.updateHomePage();
         await this.loadCategories();
-        this.updateAllBalances();
+        await this.updateAllBalances();
         this.updateStarsVisual(1); // 初始化星星显示
     }
 
@@ -184,28 +184,66 @@ class StarApp {
     }
 
     // 更新首页
-    updateHomePage() {
-        const data = this.storage.getData();
-        document.getElementById('totalStars').textContent = data.totalStars;
-        document.getElementById('todayStars').textContent = this.storage.getTodayStars();
+    async updateHomePage() {
+        try {
+            const userStats = await this.apiClient.getUserStats();
+            document.getElementById('totalStars').textContent = userStats.user.totalStars;
+            document.getElementById('todayStars').textContent = userStats.todayStars;
+
+            // 同步到本地存储作为备用
+            const data = this.storage.getData();
+            data.totalStars = userStats.user.totalStars;
+            this.storage.saveData(data);
+        } catch (error) {
+            console.error('更新首页失败:', error);
+            // 如果API失败，使用本地存储作为备用
+            const data = this.storage.getData();
+            document.getElementById('totalStars').textContent = data.totalStars;
+            document.getElementById('todayStars').textContent = this.storage.getTodayStars();
+        }
     }
 
     // 更新所有页面的余额显示
-    updateAllBalances() {
-        const data = this.storage.getData();
-        const elements = ['totalStars', 'currentStars1', 'currentStars2', 'recordPageBalance', 'managePageBalance'];
-        elements.forEach(id => {
-            const element = document.getElementById(id);
-            if (element) {
-                if (id === 'recordPageBalance' || id === 'managePageBalance') {
-                    element.textContent = `${data.totalStars} ⭐`;
-                } else if (id === 'totalStars') {
-                    element.textContent = data.totalStars;
-                } else {
-                    element.textContent = `${data.totalStars} ⭐`;
+    async updateAllBalances() {
+        try {
+            const userStats = await this.apiClient.getUserStats();
+            const totalStars = userStats.user.totalStars;
+            const elements = ['totalStars', 'currentStars1', 'currentStars2', 'recordPageBalance', 'managePageBalance'];
+            elements.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    if (id === 'recordPageBalance' || id === 'managePageBalance') {
+                        element.textContent = `${totalStars} ⭐`;
+                    } else if (id === 'totalStars') {
+                        element.textContent = totalStars;
+                    } else {
+                        element.textContent = `${totalStars} ⭐`;
+                    }
                 }
-            }
-        });
+            });
+
+            // 同步到本地存储作为备用
+            const data = this.storage.getData();
+            data.totalStars = totalStars;
+            this.storage.saveData(data);
+        } catch (error) {
+            console.error('更新余额失败:', error);
+            // 如果API失败，使用本地存储作为备用
+            const data = this.storage.getData();
+            const elements = ['totalStars', 'currentStars1', 'currentStars2', 'recordPageBalance', 'managePageBalance'];
+            elements.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    if (id === 'recordPageBalance' || id === 'managePageBalance') {
+                        element.textContent = `${data.totalStars} ⭐`;
+                    } else if (id === 'totalStars') {
+                        element.textContent = data.totalStars;
+                    } else {
+                        element.textContent = `${data.totalStars} ⭐`;
+                    }
+                }
+            });
+        }
     }
 
     // 加载分类
@@ -317,9 +355,9 @@ class StarApp {
 
             // 刷新数据并更新显示
             await this.loadUserData();
-            this.updateHomePage();
-            this.updateRecordPage();
-            this.updateAllBalances();
+            await this.updateHomePage();
+            await this.updateRecordPage();
+            await this.updateAllBalances();
 
             // 显示成功消息
             this.showMessage(`成功添加 ${stars} 颗星星！`, 'success');
@@ -330,32 +368,66 @@ class StarApp {
     }
 
     // 更新记录页面
-    updateRecordPage() {
-        const todayRecords = this.storage.getTodayRecords();
-        const container = document.getElementById('todayRecords');
-        const summaryEl = document.getElementById('todaySummary');
-        const todayTotal = this.storage.getTodayStars();
-        
-        // 更新今日总结
-        if (summaryEl) {
-            summaryEl.textContent = `今天共获得 ${todayTotal} 颗星星`;
-        }
-        
-        if (todayRecords.length === 0) {
-            container.innerHTML = '<p class="no-records">今天还没有记录</p>';
-            return;
-        }
-        
-        container.innerHTML = todayRecords.map(record => `
-            <div class="record-item">
-                <div class="record-info">
-                    <span class="category">${record.category}</span>
-                    <span class="stars">${record.stars}⭐</span>
+    async updateRecordPage() {
+        try {
+            const [todayRecords, userStats] = await Promise.all([
+                this.apiClient.getTodayRecords(),
+                this.apiClient.getUserStats()
+            ]);
+
+            const container = document.getElementById('todayRecords');
+            const summaryEl = document.getElementById('todaySummary');
+            const todayTotal = userStats.todayStars;
+
+            // 更新今日总结
+            if (summaryEl) {
+                summaryEl.textContent = `今天共获得 ${todayTotal} 颗星星`;
+            }
+
+            if (!todayRecords || todayRecords.length === 0) {
+                container.innerHTML = '<p class="no-records">今天还没有记录</p>';
+                return;
+            }
+
+            container.innerHTML = todayRecords.map(record => `
+                <div class="record-item">
+                    <div class="record-info">
+                        <span class="category">${record.categoryName}</span>
+                        <span class="stars">${record.stars}⭐</span>
+                    </div>
+                    <div class="record-note">${record.note || ''}</div>
+                    <div class="record-time">${new Date(record.createdAt).toLocaleTimeString()}</div>
                 </div>
-                <div class="record-note">${record.note || ''}</div>
-                <div class="record-time">${new Date(record.date).toLocaleTimeString()}</div>
-            </div>
-        `).join('');
+            `).join('');
+        } catch (error) {
+            console.error('更新记录页面失败:', error);
+            // 如果API失败，使用本地存储作为备用
+            const todayRecords = this.storage.getTodayRecords();
+            const container = document.getElementById('todayRecords');
+            const summaryEl = document.getElementById('todaySummary');
+            const todayTotal = this.storage.getTodayStars();
+
+            // 更新今日总结
+            if (summaryEl) {
+                summaryEl.textContent = `今天共获得 ${todayTotal} 颗星星`;
+            }
+
+            if (todayRecords.length === 0) {
+                container.innerHTML = '<p class="no-records">今天还没有记录</p>';
+                return;
+            }
+
+            container.innerHTML = todayRecords.map(record => `
+                <div class="record-item">
+                    <div class="record-info">
+                        <span class="category">${record.category}</span>
+                        <span class="stars">${record.stars}⭐</span>
+                    </div>
+                    <div class="record-note">${record.note || ''}</div>
+                    <div class="record-time">${new Date(record.date).toLocaleTimeString()}</div>
+                </div>
+            `).join('');
+        }
     }
 
     // 更新奖励页面
