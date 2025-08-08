@@ -161,9 +161,9 @@ class StarApp {
         this.init();
     }
 
-    init() {
+    async init() {
         this.updateHomePage();
-        this.loadCategories();
+        await this.loadCategories();
         this.updateAllBalances();
         this.updateStarsVisual(1); // 初始化星星显示
     }
@@ -194,19 +194,36 @@ class StarApp {
     }
 
     // 加载分类
-    loadCategories() {
-        const data = this.storage.getData();
-        const select = document.getElementById('categorySelect');
-        select.innerHTML = '';
-        
-        const icons = ['📚', '🏠', '😊', '👕', '🎨', '🏃', '🎵', '🍎'];
-        
-        data.categories.forEach((category, index) => {
-            const option = document.createElement('option');
-            option.value = category;
-            option.textContent = `${icons[index % icons.length]} ${category}`;
-            select.appendChild(option);
-        });
+    async loadCategories() {
+        try {
+            // 从云端API加载类别
+            const categories = await this.apiClient.getCategories();
+            const select = document.getElementById('categorySelect');
+            select.innerHTML = '';
+
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = `${category.emoji} ${category.name}`;
+                option.textContent = `${category.emoji} ${category.name}`;
+                option.dataset.categoryId = category.id;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error('加载类别失败:', error);
+            // 如果API失败，使用本地数据作为备用
+            const data = this.storage.getData();
+            const select = document.getElementById('categorySelect');
+            select.innerHTML = '';
+
+            const icons = ['📚', '🏠', '😊', '👕', '🎨', '🏃', '🎵', '🍎'];
+
+            data.categories.forEach((category, index) => {
+                const option = document.createElement('option');
+                option.value = `${icons[index % icons.length]} ${category}`;
+                option.textContent = `${icons[index % icons.length]} ${category}`;
+                select.appendChild(option);
+            });
+        }
     }
 
     // 添加新分类
@@ -263,39 +280,38 @@ class StarApp {
     }
 
     // 添加星星
-    addStars() {
-        const category = document.getElementById('categorySelect').value;
+    async addStars() {
+        const categorySelect = document.getElementById('categorySelect');
+        const category = categorySelect.value;
         const stars = parseInt(document.getElementById('starCount').value);
         const note = document.getElementById('noteInput').value;
 
-        const data = this.storage.getData();
-        
-        // 添加记录
-        const record = {
-            id: Date.now(),
-            category,
-            stars,
-            note,
-            date: new Date().toISOString()
-        };
-        
-        data.records.push(record);
-        data.totalStars += stars;
-        
-        this.storage.saveData(data);
-        
-        // 重置表单
-        document.getElementById('starCount').value = 1;
-        document.getElementById('noteInput').value = '';
-        this.updateStarsVisual(1); // 重置星星显示
-        
-        // 更新显示
-        this.updateHomePage();
-        this.updateRecordPage();
-        this.updateAllBalances();
-        
-        // 显示成功消息
-        this.showMessage(`成功添加 ${stars} 颗星星！`, 'success');
+        try {
+            // 获取类别ID
+            const categoryOption = categorySelect.selectedOptions[0];
+            const categoryId = categoryOption.dataset.categoryId ? parseInt(categoryOption.dataset.categoryId) : null;
+            const categoryName = category.replace(/^[^\s]+ /, ''); // 移除表情符号前缀
+
+            // 调用云端API添加记录
+            const result = await this.apiClient.addStarRecord(categoryId, categoryName, stars, note);
+
+            // 重置表单
+            document.getElementById('starCount').value = 1;
+            document.getElementById('noteInput').value = '';
+            this.updateStarsVisual(1); // 重置星星显示
+
+            // 刷新数据并更新显示
+            await this.loadUserData();
+            this.updateHomePage();
+            this.updateRecordPage();
+            this.updateAllBalances();
+
+            // 显示成功消息
+            this.showMessage(`成功添加 ${stars} 颗星星！`, 'success');
+        } catch (error) {
+            console.error('添加星星失败:', error);
+            this.showMessage('添加星星失败，请重试', 'error');
+        }
     }
 
     // 更新记录页面
