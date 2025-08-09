@@ -112,6 +112,7 @@ class StarApp {
         this.storage = new StarStorage();
         this.pageManager = new PageManager();
         this.apiClient = new ApiClient();
+        this.syncStatus = 'synced'; // 'synced', 'syncing', 'error'
         this.init();
     }
 
@@ -124,11 +125,15 @@ class StarApp {
         // 然后异步从云端同步数据
         await this.syncFromCloud();
         await this.loadCategories();
+
+        // 启动定期同步机制
+        this.startPeriodicSync();
     }
 
     // 从云端同步数据到本地
     async syncFromCloud() {
         try {
+            this.updateSyncStatus('syncing');
             const userStats = await this.apiClient.getUserStats();
 
             // 更新本地存储
@@ -140,10 +145,102 @@ class StarApp {
             this.updateHomePage();
             this.updateAllBalances();
 
+            this.updateSyncStatus('synced');
             console.log('✅ 从云端同步数据成功');
         } catch (error) {
             console.error('❌ 从云端同步数据失败:', error);
+            this.updateSyncStatus('error');
             // 使用本地数据，不显示错误消息（避免干扰用户）
+        }
+    }
+
+    // 启动定期同步机制
+    startPeriodicSync() {
+        // 每30秒检查一次云端数据变化
+        this.syncInterval = setInterval(async () => {
+            await this.checkAndSyncData();
+        }, 30000); // 30秒间隔
+
+        // 页面获得焦点时也立即检查一次
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                this.checkAndSyncData();
+            }
+        });
+
+        // 页面窗口获得焦点时检查
+        window.addEventListener('focus', () => {
+            this.checkAndSyncData();
+        });
+    }
+
+    // 检查并同步数据变化
+    async checkAndSyncData() {
+        try {
+            this.updateSyncStatus('syncing');
+            const userStats = await this.apiClient.getUserStats();
+            const data = this.storage.getData();
+            
+            // 检查总星星数是否有变化
+            if (userStats.user.totalStars !== data.totalStars) {
+                console.log(`🔄 检测到云端数据变化: ${data.totalStars} → ${userStats.user.totalStars}`);
+                
+                const oldTotal = data.totalStars;
+                
+                // 更新本地数据
+                data.totalStars = userStats.user.totalStars;
+                this.storage.saveData(data);
+                
+                // 更新界面显示
+                this.updateHomePage();
+                this.updateAllBalances();
+                
+                // 显示同步提示
+                const change = userStats.user.totalStars - oldTotal;
+                const changeText = change !== 0 ? (change > 0 ? `增加了 ${change}` : `减少了 ${Math.abs(change)}`) : '';
+                this.showMessage(`数据已同步更新！${changeText}`, 'info', 3000);
+            }
+            
+            this.updateSyncStatus('synced');
+        } catch (error) {
+            console.error('❌ 定期同步检查失败:', error);
+            this.updateSyncStatus('error');
+            // 静默处理，避免频繁报错
+        }
+    }
+
+    // 停止定期同步
+    stopPeriodicSync() {
+        if (this.syncInterval) {
+            clearInterval(this.syncInterval);
+            this.syncInterval = null;
+        }
+    }
+
+    // 更新同步状态
+    updateSyncStatus(status) {
+        this.syncStatus = status;
+        const indicator = document.getElementById('syncIndicator');
+        const statusEl = document.getElementById('syncStatus');
+        
+        if (!indicator || !statusEl) return;
+        
+        // 清除所有状态类
+        indicator.classList.remove('syncing', 'error');
+        
+        switch(status) {
+            case 'syncing':
+                indicator.classList.add('syncing');
+                statusEl.textContent = '同步中...';
+                break;
+            case 'error':
+                indicator.classList.add('error');
+                statusEl.textContent = '同步失败';
+                break;
+            case 'synced':
+            default:
+                statusEl.textContent = '已同步';
+                break;
         }
     }
 
@@ -661,9 +758,11 @@ class StarApp {
     // 异步同步到云端
     async syncToCloud(newTotal, reason, oldTotal) {
         try {
+            this.updateSyncStatus('syncing');
             await this.apiClient.updateUserTotalStars(newTotal, reason);
             console.log('✅ 云端同步成功');
 
+            this.updateSyncStatus('synced');
             // 可选：显示同步成功的小提示
             this.showMessage('已同步到云端', 'info', 2000);
         } catch (error) {
@@ -679,6 +778,7 @@ class StarApp {
             this.updateHomePage();
             this.updateManagePage();
 
+            this.updateSyncStatus('error');
             this.showMessage('云端同步失败，已回滚修改。请检查网络连接后重试', 'error');
         }
     }

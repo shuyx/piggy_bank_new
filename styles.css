@@ -61,6 +61,39 @@ body {
     box-shadow: 0 0 8px rgba(102, 126, 234, 0.4);
 }
 
+/* 同步状态指示器 */
+.sync-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 8px;
+    padding-left: 8px;
+    border-left: 1px solid #ddd;
+    font-size: 12px;
+    color: #666;
+    opacity: 0.8;
+    transition: all 0.3s ease;
+}
+
+.sync-indicator.syncing {
+    color: #667eea;
+    opacity: 1;
+}
+
+.sync-indicator.syncing .sync-icon {
+    animation: cloudPulse 1.5s ease-in-out infinite;
+}
+
+.sync-indicator.error {
+    color: #ff6b6b;
+    opacity: 1;
+}
+
+@keyframes cloudPulse {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+}
+
 /* 页面容器 */
 .pages-container {
     display: flex;
