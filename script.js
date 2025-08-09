@@ -113,6 +113,7 @@ class StarApp {
         this.pageManager = new PageManager();
         this.apiClient = new ApiClient();
         this.syncStatus = 'synced'; // 'synced', 'syncing', 'error'
+        this.syncListenersAdded = false; // 避免重复添加事件监听器
         this.init();
     }
 
@@ -171,26 +172,42 @@ class StarApp {
 
     // 启动定期同步机制
     startPeriodicSync() {
+        // 避免重复启动
+        if (this.syncInterval) {
+            return;
+        }
+
         // 每30秒检查一次云端数据变化
         this.syncInterval = setInterval(async () => {
             await this.checkAndSyncData();
         }, 30000); // 30秒间隔
 
-        // 页面获得焦点时也立即检查一次
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) {
-                this.checkAndSyncData();
-            }
-        });
+        // 只在第一次启动时添加事件监听器
+        if (!this.syncListenersAdded) {
+            // 页面获得焦点时也立即检查一次
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) {
+                    this.checkAndSyncData();
+                }
+            });
 
-        // 页面窗口获得焦点时检查
-        window.addEventListener('focus', () => {
-            this.checkAndSyncData();
-        });
+            // 页面窗口获得焦点时检查
+            window.addEventListener('focus', () => {
+                this.checkAndSyncData();
+            });
+
+            this.syncListenersAdded = true;
+        }
     }
 
     // 检查并同步数据变化
     async checkAndSyncData() {
+        // 如果当前正在进行管理操作，跳过同步检查
+        if (this.syncStatus === 'syncing') {
+            console.log('⏸️ 正在同步中，跳过重复检查');
+            return;
+        }
+
         try {
             this.updateSyncStatus('syncing');
             const userStats = await this.apiClient.getUserStats();
@@ -732,13 +749,16 @@ class StarApp {
         }
 
         if (confirm(`确定要将总星星数从 ${oldTotal} 修改为 ${newTotal} 吗？\n原因：${reason}`)) {
-            // 🎯 强一致性更新：先上传云端，确保数据一致性
+            // 🎯 管理设置：强制重置总星星数，暂停自动同步避免冲突
+            
+            // 暂时停止定期同步，避免干扰管理操作
+            this.stopPeriodicSync();
 
             this.updateSyncStatus('syncing');
             this.showMessage('正在同步到云端...', 'info');
 
             try {
-                // 1. 先上传到云端，确保云端数据是最新的
+                // 1. 先上传到云端，强制设置新的总星星数
                 await this.apiClient.updateUserTotalStars(newTotal, reason);
                 
                 // 2. 云端上传成功后，更新本地数据
@@ -774,11 +794,20 @@ class StarApp {
 
                 this.updateSyncStatus('synced');
                 console.log('✅ 数据更新并同步成功');
+                
+                // 5秒后重新启动定期同步，确保管理操作完全生效
+                setTimeout(() => {
+                    this.startPeriodicSync();
+                    console.log('🔄 重新启动定期同步');
+                }, 5000);
 
             } catch (error) {
                 console.error('❌ 数据同步失败:', error);
                 this.updateSyncStatus('error');
                 this.showMessage('云端同步失败，请检查网络连接后重试', 'error');
+                
+                // 重新启动定期同步
+                this.startPeriodicSync();
                 
                 // 不要更新本地数据，保持原状
             }
