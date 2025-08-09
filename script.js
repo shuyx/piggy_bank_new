@@ -19,7 +19,18 @@ class StarStorage {
     }
 
     getData() {
-        return JSON.parse(localStorage.getItem('starData'));
+        const defaultData = {
+            totalStars: 0,
+            records: [],
+            rewards: [],
+            punishments: [],
+            categories: ['学习', '家务', '礼貌', '自理', '运动'],
+            manageRecords: [],
+            lastModified: null  // 本地数据最后修改时间
+        };
+        
+        const data = localStorage.getItem('starData');
+        return data ? { ...defaultData, ...JSON.parse(data) } : defaultData;
     }
 
     saveData(data) {
@@ -138,27 +149,37 @@ class StarApp {
             const userStats = await this.apiClient.getUserStats();
             const data = this.storage.getData();
 
-            // 🔑 核心修复：只有云端数据更新时才同步本地
-            // 这确保了本地修改不会被意外覆盖
+            // 🔑 初始化同步：使用双向智能同步逻辑
             if (userStats.user.totalStars !== data.totalStars) {
-                console.log(`🔄 云端数据有更新: ${data.totalStars} → ${userStats.user.totalStars}`);
+                console.log(`📊 初始化检测到数据差异: 本地=${data.totalStars}, 云端=${userStats.user.totalStars}`);
                 
-                const oldTotal = data.totalStars;
+                // 获取时间戳进行比较
+                const cloudLastUpdated = new Date(userStats.user.updatedAt);
+                const localLastModified = data.lastModified ? new Date(data.lastModified) : new Date(0);
                 
-                // 更新本地存储
-                data.totalStars = userStats.user.totalStars;
-                this.storage.saveData(data);
+                console.log(`⏰ 初始化时间比较: 本地=${localLastModified.toISOString()}, 云端=${cloudLastUpdated.toISOString()}`);
+                
+                if (localLastModified > cloudLastUpdated) {
+                    // 本地数据更新，推送到云端
+                    console.log('⬆️ 初始化：本地数据更新，推送到云端');
+                    try {
+                        await this.apiClient.updateUserTotalStars(data.totalStars, '初始化本地数据同步');
+                        console.log('✅ 初始化：本地数据已推送到云端');
+                    } catch (error) {
+                        console.error('❌ 初始化推送失败:', error);
+                    }
+                } else {
+                    // 云端数据更新，拉取到本地
+                    console.log('⬇️ 初始化：使用云端数据');
+                    data.totalStars = userStats.user.totalStars;
+                    this.storage.saveData(data);
 
-                // 更新界面显示
-                this.updateHomePage();
-                this.updateAllBalances();
-
-                // 显示更新提示
-                const change = userStats.user.totalStars - oldTotal;
-                const changeText = change > 0 ? `增加了 ${change}` : `减少了 ${Math.abs(change)}`;
-                this.showMessage(`检测到云端更新：${changeText}`, 'info', 3000);
+                    // 更新界面显示
+                    this.updateHomePage();
+                    this.updateAllBalances();
+                }
             } else {
-                console.log('✅ 数据已是最新，无需同步');
+                console.log('✅ 初始化：数据已同步');
             }
 
             this.updateSyncStatus('synced');
@@ -208,29 +229,58 @@ class StarApp {
             return;
         }
 
+        // 🚨 关键修复：检查用户是否正在管理页面输入数据
+        if (this.isUserInputting()) {
+            console.log('✋ 用户正在输入数据，跳过同步以避免干扰');
+            return;
+        }
+
         try {
             this.updateSyncStatus('syncing');
             const userStats = await this.apiClient.getUserStats();
             const data = this.storage.getData();
             
-            // 检查总星星数是否有变化
+            // 🎯 核心修复：智能双向同步逻辑
             if (userStats.user.totalStars !== data.totalStars) {
-                console.log(`🔄 检测到云端数据变化: ${data.totalStars} → ${userStats.user.totalStars}`);
+                console.log(`📊 检测到数据差异: 本地=${data.totalStars}, 云端=${userStats.user.totalStars}`);
                 
-                const oldTotal = data.totalStars;
+                // 获取云端最后更新时间
+                const cloudLastUpdated = new Date(userStats.user.updatedAt);
+                const localLastModified = data.lastModified ? new Date(data.lastModified) : new Date(0);
                 
-                // 更新本地数据
-                data.totalStars = userStats.user.totalStars;
-                this.storage.saveData(data);
+                console.log(`⏰ 时间比较: 本地=${localLastModified.toISOString()}, 云端=${cloudLastUpdated.toISOString()}`);
                 
-                // 更新界面显示
-                this.updateHomePage();
-                this.updateAllBalances();
-                
-                // 显示同步提示
-                const change = userStats.user.totalStars - oldTotal;
-                const changeText = change !== 0 ? (change > 0 ? `增加了 ${change}` : `减少了 ${Math.abs(change)}`) : '';
-                this.showMessage(`数据已同步更新！${changeText}`, 'info', 3000);
+                // 比较修改时间，决定同步方向
+                if (localLastModified > cloudLastUpdated) {
+                    // 本地数据更新，推送到云端
+                    console.log('⬆️ 本地数据更新，推送到云端');
+                    try {
+                        await this.apiClient.updateUserTotalStars(data.totalStars, '本地数据同步');
+                        console.log('✅ 本地数据已推送到云端');
+                        this.showMessage('已将本地数据同步到云端', 'success', 3000);
+                    } catch (error) {
+                        console.error('❌ 推送本地数据到云端失败:', error);
+                        this.showMessage('同步到云端失败', 'error', 3000);
+                    }
+                } else {
+                    // 云端数据更新，拉取到本地
+                    console.log('⬇️ 云端数据更新，拉取到本地');
+                    const oldTotal = data.totalStars;
+                    
+                    data.totalStars = userStats.user.totalStars;
+                    this.storage.saveData(data);
+
+                    // 更新界面显示
+                    this.updateHomePage();
+                    this.updateAllBalances();
+
+                    // 显示更新提示
+                    const change = userStats.user.totalStars - oldTotal;
+                    const changeText = change > 0 ? `增加了 ${change}` : `减少了 ${Math.abs(change)}`;
+                    this.showMessage(`检测到云端更新：${changeText}`, 'info', 3000);
+                }
+            } else {
+                console.log('✅ 数据已同步，无需更新');
             }
             
             this.updateSyncStatus('synced');
@@ -763,6 +813,7 @@ class StarApp {
                 
                 // 2. 云端上传成功后，更新本地数据
                 data.totalStars = newTotal;
+                data.lastModified = new Date().toISOString(); // 记录本地修改时间
 
                 // 3. 记录管理操作
                 if (!data.manageRecords) {
