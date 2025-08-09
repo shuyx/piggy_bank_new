@@ -259,6 +259,16 @@ class ApiClient {
         this.userId = userId;
         this.clearCache();
     }
+
+    // 重新计算用户总星星数
+    async recalculateUserStars() {
+        const result = await this.request(`/users/recalculate/${this.userId}`, 'POST');
+        
+        // 清除相关缓存
+        this.clearCache();
+        
+        return result;
+    }
 }
 
 // 创建全局API客户端实例
