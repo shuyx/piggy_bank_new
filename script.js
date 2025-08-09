@@ -116,11 +116,35 @@ class StarApp {
     }
 
     async init() {
-        await this.loadUserData();
-        await this.updateHomePage();
-        await this.loadCategories();
-        await this.updateAllBalances();
+        // 先显示本地数据，确保界面快速响应
+        this.updateHomePage();
+        this.updateAllBalances();
         this.updateStarsVisual(1); // 初始化星星显示
+
+        // 然后异步从云端同步数据
+        await this.syncFromCloud();
+        await this.loadCategories();
+    }
+
+    // 从云端同步数据到本地
+    async syncFromCloud() {
+        try {
+            const userStats = await this.apiClient.getUserStats();
+
+            // 更新本地存储
+            const data = this.storage.getData();
+            data.totalStars = userStats.user.totalStars;
+            this.storage.saveData(data);
+
+            // 更新界面显示
+            this.updateHomePage();
+            this.updateAllBalances();
+
+            console.log('✅ 从云端同步数据成功');
+        } catch (error) {
+            console.error('❌ 从云端同步数据失败:', error);
+            // 使用本地数据，不显示错误消息（避免干扰用户）
+        }
     }
 
     // 加载用户数据
@@ -137,66 +161,32 @@ class StarApp {
     }
 
     // 更新首页
-    async updateHomePage() {
-        try {
-            const userStats = await this.apiClient.getUserStats();
-            document.getElementById('totalStars').textContent = userStats.user.totalStars;
-            document.getElementById('todayStars').textContent = userStats.todayStars;
-
-            // 同步到本地存储作为备用
-            const data = this.storage.getData();
-            data.totalStars = userStats.user.totalStars;
-            this.storage.saveData(data);
-        } catch (error) {
-            console.error('更新首页失败:', error);
-            // 如果API失败，使用本地存储作为备用
-            const data = this.storage.getData();
-            document.getElementById('totalStars').textContent = data.totalStars;
-            document.getElementById('todayStars').textContent = this.storage.getTodayStars();
-        }
+    updateHomePage() {
+        // 🎯 优先使用本地数据，确保界面立即响应
+        const data = this.storage.getData();
+        document.getElementById('totalStars').textContent = data.totalStars;
+        document.getElementById('todayStars').textContent = this.storage.getTodayStars();
     }
 
     // 更新所有页面的余额显示
-    async updateAllBalances() {
-        try {
-            const userStats = await this.apiClient.getUserStats();
-            const totalStars = userStats.user.totalStars;
-            const elements = ['totalStars', 'currentStars1', 'currentStars2', 'recordPageBalance', 'managePageBalance'];
-            elements.forEach(id => {
-                const element = document.getElementById(id);
-                if (element) {
-                    if (id === 'recordPageBalance' || id === 'managePageBalance') {
-                        element.textContent = `${totalStars} ⭐`;
-                    } else if (id === 'totalStars') {
-                        element.textContent = totalStars;
-                    } else {
-                        element.textContent = `${totalStars} ⭐`;
-                    }
-                }
-            });
+    updateAllBalances() {
+        // 🎯 优先使用本地数据，确保界面立即响应
+        const data = this.storage.getData();
+        const totalStars = data.totalStars;
+        const elements = ['totalStars', 'currentStars1', 'currentStars2', 'recordPageBalance', 'managePageBalance'];
 
-            // 同步到本地存储作为备用
-            const data = this.storage.getData();
-            data.totalStars = totalStars;
-            this.storage.saveData(data);
-        } catch (error) {
-            console.error('更新余额失败:', error);
-            // 如果API失败，使用本地存储作为备用
-            const data = this.storage.getData();
-            const elements = ['totalStars', 'currentStars1', 'currentStars2', 'recordPageBalance', 'managePageBalance'];
-            elements.forEach(id => {
-                const element = document.getElementById(id);
-                if (element) {
-                    if (id === 'recordPageBalance' || id === 'managePageBalance') {
-                        element.textContent = `${data.totalStars} ⭐`;
-                    } else if (id === 'totalStars') {
-                        element.textContent = data.totalStars;
-                    } else {
-                        element.textContent = `${data.totalStars} ⭐`;
-                    }
+        elements.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                if (id === 'recordPageBalance' || id === 'managePageBalance') {
+                    element.textContent = `${totalStars} ⭐`;
+                } else if (id === 'totalStars') {
+                    element.textContent = totalStars;
+                } else {
+                    element.textContent = `${totalStars} ⭐`;
                 }
-            });
-        }
+            }
+        });
     }
 
     // 加载分类
@@ -542,78 +532,42 @@ class StarApp {
     }
 
     // 更新管理页面
-    async updateManagePage() {
-        try {
-            const userStats = await this.apiClient.getUserStats();
-            const totalStars = userStats.user.totalStars;
+    updateManagePage() {
+        // 🎯 优先使用本地数据，确保界面立即响应
+        const data = this.storage.getData();
+        const totalStars = data.totalStars;
 
-            // 更新当前余额显示
-            document.getElementById('managePageBalance').textContent = `${totalStars} ⭐`;
+        // 更新当前余额显示
+        document.getElementById('managePageBalance').textContent = `${totalStars} ⭐`;
 
-            // 设置输入框当前值
-            const input = document.getElementById('newTotalStars');
-            if (input && input.value === '0') {
-                input.value = totalStars;
-            }
-
-            // 更新统计数据
-            await this.updateStatsData();
-
-            // 更新管理记录
-            this.updateManageRecords();
-
-            // 同步到本地存储作为备用
-            const data = this.storage.getData();
-            data.totalStars = totalStars;
-            this.storage.saveData(data);
-        } catch (error) {
-            console.error('更新管理页面失败:', error);
-            // 如果API失败，使用本地存储作为备用
-            const data = this.storage.getData();
-
-            // 更新当前余额显示
-            document.getElementById('managePageBalance').textContent = `${data.totalStars} ⭐`;
-
-            // 设置输入框当前值
-            const input = document.getElementById('newTotalStars');
-            if (input && input.value === '0') {
-                input.value = data.totalStars;
-            }
-
-            // 更新统计数据
-            this.updateStatsData();
-
-            // 更新管理记录
-            this.updateManageRecords();
+        // 设置输入框当前值
+        const input = document.getElementById('newTotalStars');
+        if (input && (input.value === '0' || input.value === '')) {
+            input.value = totalStars;
         }
+
+        // 更新统计数据
+        this.updateStatsData();
+
+        // 更新管理记录
+        this.updateManageRecords();
     }
 
     // 更新统计数据
-    async updateStatsData() {
-        try {
-            const userStats = await this.apiClient.getUserStats();
+    updateStatsData() {
+        // 🎯 优先使用本地数据，确保界面立即响应
+        const data = this.storage.getData();
 
-            // 更新统计显示
-            document.getElementById('usageDays').textContent = userStats.user.usageDays;
-            document.getElementById('recordCount').textContent = userStats.counts.records;
-            document.getElementById('rewardCount').textContent = userStats.counts.rewards;
-            document.getElementById('punishCount').textContent = userStats.counts.punishments;
-        } catch (error) {
-            console.error('更新统计数据失败:', error);
-            // 如果API失败，使用本地存储作为备用
-            const data = this.storage.getData();
+        // 计算使用天数
+        const firstUseDate = new Date(data.firstUseDate || new Date());
+        const today = new Date();
+        const usageDays = Math.ceil((today - firstUseDate) / (1000 * 60 * 60 * 24));
 
-            // 计算使用天数
-            const firstUseDate = new Date(data.firstUseDate || new Date());
-            const today = new Date();
-            const usageDays = Math.ceil((today - firstUseDate) / (1000 * 60 * 60 * 24));
-
-            // 更新统计显示
-            document.getElementById('usageDays').textContent = usageDays;
-            document.getElementById('recordCount').textContent = data.records.length;
-            document.getElementById('rewardCount').textContent = data.rewards.length;
-            document.getElementById('punishCount').textContent = data.punishments.length;
-        }
+        // 更新统计显示
+        document.getElementById('usageDays').textContent = usageDays;
+        document.getElementById('recordCount').textContent = data.records.length;
+        document.getElementById('rewardCount').textContent = data.rewards.length;
+        document.getElementById('punishCount').textContent = data.punishments.length;
     }
 
     // 更新管理记录
@@ -666,42 +620,66 @@ class StarApp {
         }
 
         if (confirm(`确定要将总星星数从 ${oldTotal} 修改为 ${newTotal} 吗？\n原因：${reason}`)) {
-            try {
-                // 调用云端API更新总星星数
-                await this.apiClient.updateUserTotalStars(newTotal, reason);
+            // 🎯 乐观更新：立即更新界面，不等待云端响应
 
-                // 记录管理操作到本地存储作为备用
-                if (!data.manageRecords) {
-                    data.manageRecords = [];
-                }
-                data.manageRecords.push({
-                    id: Date.now(),
-                    oldValue: oldTotal,
-                    newValue: newTotal,
-                    reason: reason,
-                    date: new Date().toISOString()
-                });
+            // 1. 立即更新本地数据
+            data.totalStars = newTotal;
 
-                // 更新本地存储
-                data.totalStars = newTotal;
-                this.storage.saveData(data);
-
-                // 重置表单
-                document.getElementById('changeReason').value = '';
-
-                // 刷新所有页面数据
-                await this.loadUserData();
-                await this.updateAllBalances();
-                await this.updateHomePage();
-                this.updateManagePage();
-
-                const change = newTotal - oldTotal;
-                const changeText = change > 0 ? `增加了 ${change}` : `减少了 ${Math.abs(change)}`;
-                this.showMessage(`总星星数已更新并同步到云端！${changeText} 颗星星`, 'success');
-            } catch (error) {
-                console.error('更新总星星数失败:', error);
-                this.showMessage('更新失败，请检查网络连接后重试', 'error');
+            // 2. 记录管理操作
+            if (!data.manageRecords) {
+                data.manageRecords = [];
             }
+            data.manageRecords.push({
+                id: Date.now(),
+                oldValue: oldTotal,
+                newValue: newTotal,
+                reason: reason,
+                date: new Date().toISOString()
+            });
+
+            // 3. 保存到本地存储
+            this.storage.saveData(data);
+
+            // 4. 立即更新所有页面显示
+            this.updateAllBalances();
+            this.updateHomePage();
+            this.updateManagePage();
+
+            // 5. 重置表单
+            document.getElementById('changeReason').value = '';
+
+            // 6. 显示成功消息
+            const change = newTotal - oldTotal;
+            const changeText = change > 0 ? `增加了 ${change}` : `减少了 ${Math.abs(change)}`;
+            this.showMessage(`总星星数已更新！${changeText} 颗星星`, 'success');
+
+            // 7. 异步上传到云端（不阻塞界面）
+            this.syncToCloud(newTotal, reason, oldTotal);
+        }
+    }
+
+    // 异步同步到云端
+    async syncToCloud(newTotal, reason, oldTotal) {
+        try {
+            await this.apiClient.updateUserTotalStars(newTotal, reason);
+            console.log('✅ 云端同步成功');
+
+            // 可选：显示同步成功的小提示
+            this.showMessage('已同步到云端', 'info', 2000);
+        } catch (error) {
+            console.error('❌ 云端同步失败:', error);
+
+            // 同步失败时，回滚本地数据并提示用户
+            const data = this.storage.getData();
+            data.totalStars = oldTotal;
+            this.storage.saveData(data);
+
+            // 回滚界面显示
+            this.updateAllBalances();
+            this.updateHomePage();
+            this.updateManagePage();
+
+            this.showMessage('云端同步失败，已回滚修改。请检查网络连接后重试', 'error');
         }
     }
 
@@ -817,23 +795,27 @@ class StarApp {
     }
 
     // 显示消息
-    showMessage(message, type = 'info') {
+    showMessage(message, type = 'info', duration = 3000) {
         // 创建消息元素
         const messageEl = document.createElement('div');
         messageEl.className = `message ${type}`;
         messageEl.textContent = message;
-        
+
         // 添加到页面
         document.body.appendChild(messageEl);
-        
+
         // 显示动画
         setTimeout(() => messageEl.classList.add('show'), 10);
-        
+
         // 自动隐藏
         setTimeout(() => {
             messageEl.classList.remove('show');
-            setTimeout(() => document.body.removeChild(messageEl), 300);
-        }, 2000);
+            setTimeout(() => {
+                if (document.body.contains(messageEl)) {
+                    document.body.removeChild(messageEl);
+                }
+            }, 300);
+        }, duration);
     }
 }
 
