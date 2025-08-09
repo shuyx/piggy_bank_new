@@ -127,6 +127,64 @@ router.put('/stats/:userId', [
   }
 });
 
+// 重新计算用户总星星数（修复数据不一致问题）
+router.post('/recalculate/:userId', async (req, res) => {
+  try {
+    const userId = parseInt(req.params.userId);
+
+    // 使用事务确保数据一致性
+    const result = await prisma.$transaction(async (tx) => {
+      // 计算所有记录的总星星数
+      const records = await tx.starRecord.findMany({
+        where: { userId: userId },
+        select: { stars: true }
+      });
+
+      const calculatedTotal = records.reduce((sum, record) => sum + record.stars, 0);
+
+      // 获取当前用户信息
+      const currentUser = await tx.user.findUnique({
+        where: { id: userId }
+      });
+
+      if (!currentUser) {
+        throw new Error('用户不存在');
+      }
+
+      // 更新用户总星星数为计算出的正确值
+      const updatedUser = await tx.user.update({
+        where: { id: userId },
+        data: { totalStars: calculatedTotal }
+      });
+
+      // 记录修复操作
+      await tx.manageRecord.create({
+        data: {
+          userId: userId,
+          oldValue: currentUser.totalStars,
+          newValue: calculatedTotal,
+          reason: '系统自动修复：重新计算总星星数',
+        }
+      });
+
+      return {
+        oldTotal: currentUser.totalStars,
+        newTotal: calculatedTotal,
+        recordCount: records.length,
+        difference: calculatedTotal - currentUser.totalStars
+      };
+    });
+
+    res.json({
+      message: '总星星数重新计算完成',
+      result: result
+    });
+  } catch (error) {
+    console.error('重新计算总星星数失败:', error);
+    res.status(500).json({ error: '重新计算失败' });
+  }
+});
+
 // 创建新用户（可选功能）
 router.post('/', [
   body('username').notEmpty().withMessage('用户名不能为空'),
