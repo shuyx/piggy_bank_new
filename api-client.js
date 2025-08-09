@@ -238,9 +238,12 @@ class ApiClient {
 
     // 更新用户总星星数
     async updateUserTotalStars(newTotal, reason) {
-        const result = await this.request(`/users/stats/${this.userId}`, 'PUT', {
-            totalStars: newTotal,
-            reason: reason
+        const result = await this.request(`/users/stats/${this.userId}`, {
+            method: 'PUT',
+            body: JSON.stringify({
+                totalStars: newTotal,
+                reason: reason
+            })
         });
 
         // 清除相关缓存

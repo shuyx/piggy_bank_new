@@ -257,10 +257,10 @@ class StarApp {
                     try {
                         await this.apiClient.updateUserTotalStars(data.totalStars, '本地数据同步');
                         console.log('✅ 本地数据已推送到云端');
-                        this.showMessage('已将本地数据同步到云端', 'success', 3000);
+                        // 移除界面提示，避免遮挡UI
                     } catch (error) {
                         console.error('❌ 推送本地数据到云端失败:', error);
-                        this.showMessage('同步到云端失败', 'error', 3000);
+                        // 移除界面提示，避免遮挡UI
                     }
                 } else {
                     // 云端数据更新，拉取到本地
@@ -786,7 +786,7 @@ class StarApp {
         const reason = document.getElementById('changeReason').value.trim();
 
         if (!reason) {
-            this.showMessage('请输入修改原因！', 'error');
+            alert('请输入修改原因！');
             return;
         }
 
@@ -794,74 +794,76 @@ class StarApp {
         const oldTotal = data.totalStars;
 
         if (newTotal === oldTotal) {
-            this.showMessage('星星数量没有变化！', 'warning');
+            alert('星星数量没有变化！');
             return;
         }
 
         if (confirm(`确定要将总星星数从 ${oldTotal} 修改为 ${newTotal} 吗？\n原因：${reason}`)) {
-            // 🎯 管理设置：强制重置总星星数，暂停自动同步避免冲突
-            
-            // 暂时停止定期同步，避免干扰管理操作
-            this.stopPeriodicSync();
+            // 🎯 管理设置：绝对值重置，完全刷新本地和云端数据
 
-            this.updateSyncStatus('syncing');
-            this.showMessage('正在同步到云端...', 'info');
+            // 1. 立即更新本地界面（乐观更新）
+            data.totalStars = newTotal;
+            data.lastModified = new Date().toISOString();
 
-            try {
-                // 1. 先上传到云端，强制设置新的总星星数
-                await this.apiClient.updateUserTotalStars(newTotal, reason);
-                
-                // 2. 云端上传成功后，更新本地数据
-                data.totalStars = newTotal;
-                data.lastModified = new Date().toISOString(); // 记录本地修改时间
-
-                // 3. 记录管理操作
-                if (!data.manageRecords) {
-                    data.manageRecords = [];
-                }
-                data.manageRecords.push({
-                    id: Date.now(),
-                    oldValue: oldTotal,
-                    newValue: newTotal,
-                    reason: reason,
-                    date: new Date().toISOString()
-                });
-
-                // 4. 保存到本地存储
-                this.storage.saveData(data);
-
-                // 5. 更新所有页面显示
-                this.updateAllBalances();
-                this.updateHomePage();
-                this.updateManagePage();
-
-                // 6. 重置表单
-                document.getElementById('changeReason').value = '';
-
-                // 7. 显示成功消息
-                const change = newTotal - oldTotal;
-                const changeText = change > 0 ? `增加了 ${change}` : `减少了 ${Math.abs(change)}`;
-                this.showMessage(`总星星数已更新并同步！${changeText} 颗星星`, 'success');
-
-                this.updateSyncStatus('synced');
-                console.log('✅ 数据更新并同步成功');
-                
-                // 5秒后重新启动定期同步，确保管理操作完全生效
-                setTimeout(() => {
-                    this.startPeriodicSync();
-                    console.log('🔄 重新启动定期同步');
-                }, 5000);
-
-            } catch (error) {
-                console.error('❌ 数据同步失败:', error);
-                this.updateSyncStatus('error');
-                this.showMessage('云端同步失败，请检查网络连接后重试', 'error');
-                
-                // 重新启动定期同步
-                this.startPeriodicSync();
-                
-                // 不要更新本地数据，保持原状
+            // 2. 记录管理操作到本地
+            if (!data.manageRecords) {
+                data.manageRecords = [];
             }
+            data.manageRecords.push({
+                id: Date.now(),
+                oldValue: oldTotal,
+                newValue: newTotal,
+                reason: reason,
+                date: new Date().toISOString()
+            });
+
+            // 3. 保存到本地存储
+            this.storage.saveData(data);
+
+            // 4. 立即更新所有页面显示
+            this.updateAllBalances();
+            this.updateHomePage();
+            this.updateManagePage();
+
+            // 5. 重置表单
+            document.getElementById('changeReason').value = '';
+
+            // 6. 显示立即反馈
+            const change = newTotal - oldTotal;
+            const changeText = change > 0 ? `增加了 ${change}` : `减少了 ${Math.abs(change)}`;
+            alert(`总星星数已更新！${changeText} 颗星星\n正在同步到云端...`);
+
+            // 7. 异步同步到云端（不阻塞界面）
+            this.syncManageChangeToCloud(newTotal, reason, oldTotal);
+        }
+    }
+
+    // 异步同步管理设置到云端
+    async syncManageChangeToCloud(newTotal, reason, oldTotal) {
+        try {
+            // 使用绝对值更新云端数据
+            await this.apiClient.updateUserTotalStars(newTotal, reason);
+            console.log('✅ 管理设置云端同步成功');
+
+            // 成功后显示提示
+            setTimeout(() => {
+                alert('云端同步成功！');
+            }, 1000);
+
+        } catch (error) {
+            console.error('❌ 管理设置云端同步失败:', error);
+
+            // 同步失败时，回滚本地数据并提示用户
+            const data = this.storage.getData();
+            data.totalStars = oldTotal;
+            this.storage.saveData(data);
+
+            // 回滚界面显示
+            this.updateAllBalances();
+            this.updateHomePage();
+            this.updateManagePage();
+
+            alert('云端同步失败，已回滚修改。请检查网络连接后重试！');
         }
     }
 
